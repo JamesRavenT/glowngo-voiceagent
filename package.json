@@ -7,6 +7,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "build": "next build",
+    "check:bloat": "node scripts/check-bloat.ts",
     "crop:storefront": "node scripts/crop-storefront.ts",
     "start": "next start",
     "test": "vitest run",
