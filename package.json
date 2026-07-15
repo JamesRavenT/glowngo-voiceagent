@@ -7,6 +7,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "build": "next build",
+    "crop:storefront": "node scripts/crop-storefront.ts",
     "start": "next start",
     "test": "vitest run",
     "test:e2e": "node -e \"console.error('Playwright is not configured yet'); process.exit(1)\""
@@ -35,6 +36,7 @@
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",
     "shadcn": "^4.13.0",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

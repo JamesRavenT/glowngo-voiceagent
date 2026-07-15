@@ -1,13 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Familjen_Grotesk, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-
-const display = Familjen_Grotesk({ subsets: ["latin"], variable: "--display" });
-const body = Inter_Tight({ subsets: ["latin"], variable: "--body" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--mono" });
 
 export default function ChairSide() {
   const [open, setOpen] = useState(false);
@@ -19,10 +14,10 @@ export default function ChairSide() {
   }, [open]);
 
   return (
-    <main className={`${styles.page} ${display.variable} ${body.variable} ${mono.variable}`}>
-      <Image src="/Hero.png" alt="Glow & Go salon interior" fill priority className={styles.photo} />
+    <main className={styles.page}>
+      <Image src="/brand/Hero.png" alt="Glow & Go salon interior" fill priority className={styles.photo} />
       <div className={styles.shade} />
-      <Image src="/Navbar Text.png" alt="Glow & Go" width={162} height={64} className={styles.logo} priority />
+      <Image src="/brand/Navbar Text.png" alt="Glow & Go" width={162} height={64} className={styles.logo} priority />
       <div className={styles.copy}>
         <p>Los Angeles · By appointment</p>
         <h1>Your chair<br />is waiting.</h1>

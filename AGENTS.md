@@ -99,8 +99,10 @@ From the supplied brand assets: near-black `#0B0A09`, copper `#B0703C`, gold-gra
 cream text. Editorial and warm — brass, hard warm light, backlit ovals. The call modal is a
 hologram in **copper/gold on near-black — not cyan**.
 
-Assets live in `public/`, converted to WebP and served via `next/image`. The source PNGs are ~2MB
-and must not ship as-is. `Location.png` is cropped tight to the facade.
+Brand assets live in `public/brand/` as PNG sources, served via `next/image` — which negotiates
+format and size on its own, so do **not** hand-build a WebP pipeline. The one real crop is
+`Location.png` → `public/brand/storefront.png`, produced reproducibly by `scripts/crop-storefront.ts`
+to remove street cues that clash with the US addresses.
 
 Section order: Navbar → Hero → About → Services → Locations → FAQ → Contact → Footer.
 

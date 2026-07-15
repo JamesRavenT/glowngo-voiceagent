@@ -2,8 +2,6 @@ import Link from "next/link";
 
 const directions = [
   { href: "/mockups/a", name: "A — Chair Side", thesis: "You are already in the chair." },
-  { href: "/mockups/b", name: "B — The Voice", thesis: "The page is the agent." },
-  { href: "/mockups/c", name: "C — Brass & Mirror", thesis: "The mirror talks back." },
 ];
 
 export default function MockupsPage() {
@@ -12,7 +10,7 @@ export default function MockupsPage() {
       <div className="mx-auto max-w-5xl">
         <p className="mb-5 text-xs uppercase tracking-[0.28em] text-[#B0703C]">Glow &amp; Go / Visual studies</p>
         <h1 className="max-w-3xl text-5xl font-semibold tracking-[-0.055em] sm:text-7xl">Choose the voice of the room.</h1>
-        <div className="mt-16 grid gap-px bg-[#8A5A2B] md:grid-cols-3">
+        <div className="mt-16 grid gap-px bg-[#8A5A2B]">
           {directions.map((direction) => (
             <Link
               key={direction.href}
