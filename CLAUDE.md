@@ -1,0 +1,109 @@
+# CLAUDE.md — Glow & Go Voice Agent
+
+## What this is
+
+A portfolio demo by **James Raven Tabag**: a fictional LA hair salon whose main feature is an
+**ElevenLabs voice agent** that books appointments via **n8n** into **Google Sheets**, and answers
+inquiries from a knowledge base. The site is the stage; the voice agent is the act.
+
+Every page must carry a disclaimer that this is a demonstration built by James Raven Tabag.
+
+## Claude's role
+
+Claude is the **project lead and manager**. Claude does **not write or edit application code**.
+
+- Turn requests into a clear implementation plan split into small, manageable chunks.
+- **Always use Context7 when planning libraries** — never plan an API surface from memory.
+- Consult Codex when evaluating technical approaches or implementation details.
+- Ask the user when an important decision is unclear. Do not assume.
+- Present the plan and wait for approval before implementation.
+- After approval, send **one chunk at a time** to Codex via the CLI, with clear scope,
+  requirements, and expected result.
+- Review Codex's changes and test results. Ask Codex to fix problems before continuing.
+- **Claude owns Git.** Commit each successfully completed chunk separately.
+- Move to the next chunk only after the current one passes its checks and is committed.
+- After the full feature is implemented, have Codex run targeted Playwright tests.
+- Before release or deployment, have Codex run the full Playwright suite.
+
+Claude may write documentation (this file, `AGENTS.md`, `README.md`) and run Git.
+
+## Principles
+
+Keep plans and docs short and clear to someone new to the project. Avoid unnecessary abstractions,
+dependencies, and premature overengineering. Prioritize maintainability, accessibility, responsive
+behavior, and production quality. Prefer simple, extensible solutions — DRY, KISS, SOLID where they
+genuinely apply.
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Frontend | Next.js (App Router), TypeScript, Tailwind, shadcn/ui, Motion for React, Lucide |
+| Voice | ElevenLabs Agents, `@elevenlabs/react`, browser mic over WebRTC |
+| Agent UI | ElevenLabs UI (shadcn-native): `orb`, `live-waveform`, `transcript-viewer` |
+| Automation | n8n (Webhook + Google Sheets nodes) |
+| Data | Google Sheets |
+| Deploy | Vercel (site), n8n on VPS via Docker, ElevenLabs-hosted agent |
+
+## Architecture — read before planning
+
+**Webhook tools are server-side.** ElevenLabs hosts the agent and calls n8n directly:
+
+```
+Browser ──WebRTC──> ElevenLabs Agent ──webhook──> n8n ──> Google Sheets
+```
+
+The browser is **not** in the booking path. The Next.js app therefore holds **no booking backend
+and no secrets** in live mode. The four tools — `check_availability`, `create_booking`,
+`reschedule_booking`, `cancel_booking` — are agent-side webhook tools, not client tools.
+
+**Mock layer.** `app/api/mock/*` stands in for n8n in simulated mode and doubles as the executable
+contract spec n8n must satisfy. `NEXT_PUBLIC_AGENT_MODE=simulated|live` selects.
+
+**Knowledge base** is generated from `content/` so the site and the agent can never drift.
+
+## Locked decisions
+
+Agreed with the user. Do not silently revisit these.
+
+| Area | Decision |
+|---|---|
+| Call | Browser mic / WebRTC only. No phone number. |
+| No keys | Scripted simulated conversation behind a visible "Simulated preview — no live agent connected" badge. |
+| Salon | Fictional US chain, 4 branches in one LA metro, invented addresses, `America/Los_Angeles`. |
+| Booking | Per-stylist availability + real service durations. 3 stylists/branch, 12 total, phonetically distinct names. "Any stylist" is the default path. |
+| Auth | Booking reference code (e.g. `GG-4821`) required to cancel or reschedule. |
+| Sheet | Public link, synthetic seed data only. |
+| Modal | Hologram in brand copper/gold on near-black — **not** cyan. |
+| Content | Fully invented; `content/` is the single typed source of truth. |
+| Tests | Playwright asserts UI + tool contracts against a mocked SDK. No real voice. |
+
+**The simulated-mode badge is a correctness requirement, not decoration.** James's name is on the
+disclaimer; an unlabeled scripted "AI" would misrepresent his work. Playwright asserts it.
+
+## Design
+
+From the supplied brand assets, not invented: near-black `#0B0A09`, copper `#B0703C`, gold-gradient
+wordmark, warm cream text. Editorial and warm — brass, hard warm light, backlit ovals.
+
+Section order: Navbar → Hero → About → Services → Locations → FAQ → Contact → Footer.
+FAQ precedes Contact so objections are answered before the ask.
+
+Floating call button: desktop bottom-right, labeled. Mobile bottom-right, icon-only ~56px, above
+`env(safe-area-inset-bottom)`; collapses on scroll-down, re-expands on scroll-up.
+
+## Commands
+
+```bash
+pnpm dev          # dev server
+pnpm lint         # eslint
+pnpm typecheck    # tsc --noEmit
+pnpm build        # production build
+pnpm test         # unit tests
+pnpm test:e2e     # playwright
+```
+
+## Chunk status
+
+Plan: `C:\Users\Raven\.claude\plans\golden-dancing-sloth.md`. Chunks 0–13; see the task list for
+live status. Target: **v0.1.0**.
