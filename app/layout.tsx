@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { CallProvider } from "@/components/call/call-provider";
 import { FloatingCallButton } from "@/components/call/floating-call-button";
-import { CallModal } from "@/components/call/call-modal";
+import { CallSessionSelector } from "@/components/call/call-session-selector";
 import { siteCopy } from "@/content/salon";
 import "@/app/globals.css";
 
@@ -47,7 +47,7 @@ export default function RootLayout({
           {children}
           <Footer />
           <FloatingCallButton />
-          <CallModal />
+          <CallSessionSelector />
         </CallProvider>
       </body>
     </html>

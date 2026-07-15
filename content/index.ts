@@ -1,5 +1,6 @@
 export { about } from "./about";
 export { branches } from "./branches";
+export { callCopy, simulatedCallScript } from "./call";
 export { contactCopy, examplePhrases } from "./contact";
 export { faq } from "./faq";
 export { salon, SALON_TIMEZONE, siteCopy } from "./salon";

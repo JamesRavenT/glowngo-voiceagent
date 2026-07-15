@@ -19,5 +19,6 @@ export interface CallSession {
   elapsedSeconds: number;
   inputVolume: number;
   outputVolume: number;
+  errorMessage?: string;
   end(): void;
 }

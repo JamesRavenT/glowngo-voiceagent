@@ -78,12 +78,36 @@ describe("CallModal", () => {
     expect(screen.getByLabelText("Call transcript")).toHaveAttribute("aria-live", "polite");
   });
 
+  it("reserves the explicit polite live region for the transcript", () => {
+    const { container } = renderModal();
+    fireEvent.click(screen.getByRole("button", { name: "Contact call" }));
+
+    const statusLabel = screen.getByText("Speaking");
+    expect(statusLabel).not.toHaveAttribute("role");
+    expect(statusLabel).not.toHaveAttribute("aria-live");
+
+    const politeLiveRegions = container.querySelectorAll('[aria-live="polite"]');
+    expect(politeLiveRegions).toHaveLength(1);
+    expect(politeLiveRegions[0]).toBe(screen.getByLabelText("Call transcript"));
+  });
+
   it("ends the session from the end-call control", () => {
     const session = makeSession();
     renderModal(session);
     fireEvent.click(screen.getByRole("button", { name: "Floating call" }));
     fireEvent.click(screen.getByRole("button", { name: "End call" }));
     expect(session.end).toHaveBeenCalledOnce();
+  });
+
+  it("shows the persistent badge only in simulated mode", () => {
+    const { rerender } = render(
+      <CallProvider><Triggers /><CallModal session={makeSession()} mode="simulated" /></CallProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Contact call" }));
+    expect(screen.getByText("Simulated preview — no live agent connected")).toBeVisible();
+
+    rerender(<CallProvider><Triggers /><CallModal session={makeSession()} mode="live" /></CallProvider>);
+    expect(screen.queryByText("Simulated preview — no live agent connected")).not.toBeInTheDocument();
   });
 
   it.each(["Contact call", "Floating call"])("opens from %s and returns focus after Escape", (triggerName) => {
