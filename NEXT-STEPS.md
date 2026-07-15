@@ -1,0 +1,269 @@
+# Next steps — taking Glow & Go live
+
+Operational runbook. `README.md` explains *what* to wire; this explains *how*, with the Docker
+specifics, the exact env placement, and the decisions you'll hit.
+
+**Where you are:** v0.1.0 is complete and deployable right now. It runs in simulated mode with zero
+configuration — nothing below is required to ship it as a portfolio piece. This is only for making
+the agent real.
+
+**Time:** roughly 1–2 hours, mostly waiting on DNS and Google's consent screens.
+
+---
+
+## 1. The environment variables
+
+Only three, all `NEXT_PUBLIC_*` — meaning they are **baked into the browser bundle and publicly
+visible**. That's intentional: the browser holds no secrets, because it is never in the booking
+path. Your Google credentials and n8n keys live in n8n, never here.
+
+| Variable | Value | Effect |
+|---|---|---|
+| `NEXT_PUBLIC_AGENT_MODE` | `simulated` \| `live` | Selects the call implementation |
+| `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` | `agent_xxxxx` | Which agent to connect to |
+| `NEXT_PUBLIC_BOOKING_SHEET_URL` | public sheet URL | Shows the sheet link on Contact |
+
+**The resolution rule:** live requires `NEXT_PUBLIC_AGENT_MODE=live` **and** a non-empty agent id.
+Anything else silently falls back to simulated with the badge showing. You cannot accidentally ship
+a dead Call button. (`lib/env.ts`, tested.)
+
+### Where they go
+
+**Locally** — create `.env.local` in the repo root. It's gitignored. Copy `.env.example` and fill in.
+
+```bash
+cp .env.example .env.local
+```
+
+**On Vercel** — Project → Settings → Environment Variables. Add all three to Production (and
+Preview if you want previews live). **`NEXT_PUBLIC_*` vars are inlined at build time**, so after
+changing them you must **redeploy** — restarting won't pick them up. This trips people up.
+
+**Never** put Google service-account JSON or n8n API keys in this project. They belong in n8n.
+
+---
+
+## 2. Google Sheets (do this first — everything needs the sheet id)
+
+1. Google Cloud Console → new project.
+2. Enable the **Google Sheets API**.
+3. Create a **service account**; download its JSON key. This is the only real secret in the system —
+   it goes into n8n and nowhere else.
+4. Create a spreadsheet using the columns in `artifacts/google-sheets/schema.md`.
+5. **Share the sheet with the service account's email** (it looks like
+   `something@project.iam.gserviceaccount.com`). Editor access. Skipping this is the #1 cause of
+   "n8n can't write" — the API is enabled but the sheet was never shared.
+6. Also share it **publicly, view-only** ("anyone with the link can view") — that URL becomes
+   `NEXT_PUBLIC_BOOKING_SHEET_URL`.
+7. Seed it with obviously synthetic rows. **It is publicly readable.** Anyone who books via your
+   demo puts a name and phone number into a world-readable sheet — the site warns callers, but keep
+   the data fake yourself.
+
+Record: **spreadsheet id** (from the URL) and the **service account JSON**.
+
+---
+
+## 3. n8n on a VPS with Docker
+
+You need n8n reachable at a **public HTTPS URL**, because ElevenLabs' servers call it directly.
+`localhost` and self-signed certs will not work.
+
+### Requirements
+- A VPS (Hetzner/DigitalOcean/etc. — the smallest tier is plenty)
+- A domain or subdomain pointed at its IP, e.g. `n8n.yourdomain.com`
+- Docker + Docker Compose
+
+### `compose.yaml`
+
+Traefik terminates TLS and gets certificates from Let's Encrypt automatically.
+
+```yaml
+services:
+  traefik:
+    image: traefik
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - traefik_data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
+      - traefik.http.routers.n8n.tls=true
+      - traefik.http.routers.n8n.entrypoints=web,websecure
+      - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
+    environment:
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - N8N_PROXY_HOPS=1
+      - GENERIC_TIMEZONE=America/Los_Angeles
+      - TZ=America/Los_Angeles
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
+  traefik_data:
+```
+
+With a `.env` beside it:
+
+```dotenv
+DOMAIN_NAME=yourdomain.com
+SUBDOMAIN=n8n
+SSL_EMAIL=you@yourdomain.com
+```
+
+Then `docker compose up -d`.
+
+### The two settings that matter most
+
+- **`WEBHOOK_URL`** — without it, n8n shows webhook URLs based on its *internal* address, you paste
+  those into ElevenLabs, and calls silently never arrive. This is the classic self-host failure.
+- **`N8N_PROXY_HOPS=1`** — tells n8n it's behind one reverse proxy.
+- **`GENERIC_TIMEZONE=America/Los_Angeles`** — the whole booking model is LA wall-clock. A workflow
+  running in UTC will compute the wrong day's availability. Match it deliberately.
+- The **`n8n_data` volume** holds your workflows and credentials. Lose it, lose everything.
+
+### Then
+
+1. Open `https://n8n.yourdomain.com`, create the owner account.
+2. Import `artifacts/n8n/booking.workflow.json` (Workflows → Import from File).
+3. Add the **Google Sheets credential** using the service-account JSON.
+4. Replace `<GOOGLE_SHEET_ID>` with your spreadsheet id.
+5. **Activate** the workflow — inactive workflows only expose *test* webhook URLs that fire once.
+   An inactive workflow is the second classic failure.
+6. Copy the four **production** webhook URLs.
+
+---
+
+## 4. ElevenLabs
+
+1. Create an agent. Record the **agent id** (`agent_...`).
+2. Upload `artifacts/knowledge-base.md` as its knowledge base.
+   **Re-upload it whenever `content/` changes** — run `pnpm generate:kb` first. A test enforces the
+   file matches `content/`, but nothing can force ElevenLabs to have the current copy.
+3. Create the four webhook tools from `artifacts/elevenlabs/*.json`, replacing `<N8N_HOST>` with
+   your real host. Attach all four to the agent.
+4. Give the agent a system prompt that tells it it's a salon receptionist, to use the tools rather
+   than guess, and — importantly — **to say it's a demo if asked**. The knowledge base says so, but
+   the system prompt is what governs behaviour.
+
+---
+
+## 5. ⚠ Security gap you should close before going live
+
+**The n8n webhooks are currently unauthenticated.** Anyone who discovers the URL can create or
+cancel bookings directly, bypassing the agent entirely. For a public portfolio demo that means a
+stranger can spam your sheet.
+
+This is a gap in what I built — the tool configs only set `Content-Type`. Fix it:
+
+1. In each n8n Webhook node, set **Authentication → Header Auth**, and create a credential with a
+   header name and a long random value (n8n webhooks support Basic, Header, or JWT auth).
+2. Add the same header to each `artifacts/elevenlabs/*.json` under
+   `api_schema.request_headers`, alongside `Content-Type`.
+
+ElevenLabs also supports secret/auth connections so the value isn't stored in plaintext in the tool
+config — worth using if you keep this running.
+
+**Cost note:** ElevenLabs bills per minute of conversation. A public demo button on a portfolio site
+is a small open tap. Consider agent-level limits, or only enabling live mode while showing it.
+
+---
+
+## 6. Do you need an MCP for me to configure n8n?
+
+Honest answer: **no, and it probably isn't worth it.**
+
+- **The import is a UI action.** Workflows → Import from File → pick the JSON. Thirty seconds. An
+  MCP to automate a thing you'll do once is a poor trade.
+- **I can't reach your VPS anyway.** I run on your machine. Configuring a remote n8n means giving
+  something network access and an API key.
+
+**Where it would genuinely help:** *iterating* on the workflow — debugging why an execution failed,
+adjusting node logic, re-testing — rather than the one-time import. n8n has a REST API (`/api/v1`)
+with API-key auth, and community MCP servers wrap it. If you find yourself going back and forth on
+workflow logic, that's when it earns its place.
+
+If you want that, say so and I'll research the current options properly before recommending one —
+I'm not going to name a package I haven't verified.
+
+**Don't confuse two different things:** n8n's own *MCP Server Trigger* / *MCP Client Tool* nodes let
+n8n **act as** an MCP server for AI agents. That's unrelated to configuring n8n via MCP.
+
+**My actual recommendation:** import it by hand. If the workflow misbehaves, paste the execution
+error to me and I'll tell you what to change. That loop is fast enough and needs no new
+infrastructure.
+
+---
+
+## 7. Order, and how to know each step worked
+
+| # | Step | Done when |
+|---|---|---|
+| 1 | Google Sheets | Sheet exists, shared with the service account **and** publicly view-only |
+| 2 | n8n on Docker | `https://n8n.yourdomain.com` loads over real HTTPS |
+| 3 | Import + activate | Four **production** webhook URLs copied |
+| 4 | Add webhook auth | `curl` without the header is rejected |
+| 5 | ElevenLabs | Agent id in hand, four tools attached, KB uploaded |
+| 6 | Env + redeploy | Badge is **gone** and the mic prompt appears |
+
+**Smoke test after wiring** — no automation covers this, and the README says so:
+
+1. Click Call. Grant the mic. The simulated badge should be **absent**.
+2. "I'd like a balayage with Nova next Tuesday afternoon."
+3. Agent should offer real slots — cross-check them against `/api/mock/check-availability` locally.
+4. Accept one. It should read back a `GG-####` reference.
+5. **Check the sheet.** A row should appear.
+6. "Cancel booking GG-####." Row should update.
+7. Try cancelling with a **wrong** code — it must refuse.
+
+Step 7 is the one to actually try. It's the security property, and it's the thing a technical
+reviewer will poke at.
+
+---
+
+## 8. What this costs
+
+| | |
+|---|---|
+| Vercel | Free tier is fine |
+| Google Sheets | Free |
+| VPS for n8n | ~$5/mo |
+| n8n | Free self-hosted |
+| ElevenLabs | **Per minute of conversation** — the only meaningful cost |
+
+---
+
+## 9. Known gaps, if you keep building
+
+- **Webhook auth** (§5) — do this first.
+- **No transactional lock in Sheets** — two simultaneous bookings could both see a slot free. Rare
+  in a demo; real. A proper database is the fix.
+- **Stylists have no shifts, days off or breaks** — all 12 are available every opening hour. The
+  engine already reads hours per-branch; a `stylist.hours` field consulted alongside it is the
+  natural v0.2.
+- **The live voice path is untested** — Playwright can't drive a microphone. It stays a manual
+  smoke test.
