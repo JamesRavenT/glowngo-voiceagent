@@ -1,0 +1,25 @@
+{
+  "type": "webhook",
+  "name": "create_booking",
+  "description": "Use only after check_availability has confirmed the exact slot and the caller has agreed to it. Collect synthetic demo name and phone details, then create the appointment. Never send real personal details.",
+  "api_schema": {
+    "url": "https://<N8N_HOST>/webhook/create-booking",
+    "method": "POST",
+    "path_params_schema": [],
+    "query_params_schema": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "branchId": { "type": "string", "value_type": "llm_prompt", "description": "The ID of the branch the caller selected.", "required": true },
+        "serviceId": { "type": "string", "value_type": "llm_prompt", "description": "The ID of the service the caller selected.", "required": true },
+        "date": { "type": "string", "value_type": "llm_prompt", "description": "The confirmed local appointment date in YYYY-MM-DD format.", "required": true },
+        "stylistId": { "type": "string", "value_type": "llm_prompt", "description": "The preferred stylist's ID. Omit when the caller requested any stylist so the confirmed available stylist is assigned.", "required": false },
+        "time": { "type": "string", "value_type": "llm_prompt", "description": "The confirmed available local start time in 24-hour HH:mm format.", "required": true },
+        "customerName": { "type": "string", "value_type": "llm_prompt", "description": "The synthetic demo name the caller provides after being warned not to share real details.", "required": true },
+        "customerPhone": { "type": "string", "value_type": "llm_prompt", "description": "The synthetic demo phone number the caller provides after being warned not to share real details.", "required": true }
+      }
+    },
+    "request_headers": [{ "type": "value", "name": "Content-Type", "value": "application/json" }]
+  },
+  "response_timeout_secs": 30
+}

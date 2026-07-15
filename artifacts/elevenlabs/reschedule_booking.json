@@ -1,0 +1,21 @@
+{
+  "type": "webhook",
+  "name": "reschedule_booking",
+  "description": "Use to move an existing appointment only after collecting the caller's booking reference code. The reference code is required; never identify or authorize a booking by name. Collect the new date and exact time before calling.",
+  "api_schema": {
+    "url": "https://<N8N_HOST>/webhook/reschedule-booking",
+    "method": "POST",
+    "path_params_schema": [],
+    "query_params_schema": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reference": { "type": "string", "value_type": "llm_prompt", "description": "The required booking reference code supplied by the caller, in GG-0000 form.", "required": true },
+        "date": { "type": "string", "value_type": "llm_prompt", "description": "The requested new local appointment date in YYYY-MM-DD format.", "required": true },
+        "time": { "type": "string", "value_type": "llm_prompt", "description": "The requested new local start time in 24-hour HH:mm format.", "required": true }
+      }
+    },
+    "request_headers": [{ "type": "value", "name": "Content-Type", "value": "application/json" }]
+  },
+  "response_timeout_secs": 30
+}

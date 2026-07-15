@@ -1,0 +1,27 @@
+{
+  "type": "webhook",
+  "name": "check_availability",
+  "description": "Use this before offering or booking an appointment. Collect the caller's branch, service, date, and optional preferred stylist, then retrieve open start times. If they ask for any stylist, omit stylistId.",
+  "api_schema": {
+    "url": "https://<N8N_HOST>/webhook/check-availability",
+    "method": "POST",
+    "path_params_schema": [],
+    "query_params_schema": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "branchId": { "type": "string", "value_type": "llm_prompt", "description": "The ID of the salon branch the caller chose, such as silver-lake.", "required": true },
+        "serviceId": { "type": "string", "value_type": "llm_prompt", "description": "The ID of the service the caller wants, such as precision-cut.", "required": true },
+        "date": { "type": "string", "value_type": "llm_prompt", "description": "The caller's requested local appointment date in YYYY-MM-DD format.", "required": true },
+        "stylistId": { "type": "string", "value_type": "llm_prompt", "description": "The preferred stylist's ID. Omit this field when the caller accepts any stylist.", "required": false }
+      }
+    },
+    "request_headers": [{ "type": "value", "name": "Content-Type", "value": "application/json" }],
+    "response_filter": {
+      "mode": "allow",
+      "filters": ["slots.0", "slots.1", "slots.2", "slots.3", "slots.4", "slots.5", "slots.6", "slots.7", "slots.8", "slots.9"],
+      "content_type": "application/json"
+    }
+  },
+  "response_timeout_secs": 30
+}

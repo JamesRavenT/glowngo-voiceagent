@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "build": "next build",
     "check:bloat": "node scripts/check-bloat.ts",
+    "generate:kb": "tsx scripts/generate-knowledge-base.ts",
     "crop:storefront": "node scripts/crop-storefront.ts",
     "start": "next start",
     "test": "vitest run",
@@ -40,6 +41,7 @@
     "shadcn": "^4.13.0",
     "sharp": "^0.35.3",
     "tailwindcss": "^4",
+    "tsx": "^4.23.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

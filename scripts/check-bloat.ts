@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Avoid Node's typeless-package ESM warning for this direct CLI. */
 const { readdirSync, statSync } = require("node:fs");
-const { resolve } = require("node:path");
+const { basename, resolve } = require("node:path");
 
 const MAX_DIRECTORY_BYTES = 50 * 1024 * 1024;
 const MAX_DIRECTORY_FILES = 1_000;
@@ -66,9 +66,18 @@ function formatBloatReport(offenders: DirectoryStats[]): string {
     )
     .join("\n");
 
+  const pnpmStoreGuidance = offenders.some(
+    ({ path }) => basename(path) === ".pnpm-store",
+  )
+    ? [
+        "A repository-local .pnpm-store is a known recurring problem in this repo. pnpm's store belongs in the user profile; remove this directory and correct the store location—do not add it to the allow-list.",
+      ]
+    : [];
+
   return [
     "Repository bloat check failed. Remove or relocate these directories, or add a legitimate build/cache directory to the allow-list:",
     details,
+    ...pnpmStoreGuidance,
   ].join("\n");
 }
 

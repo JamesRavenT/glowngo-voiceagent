@@ -1,0 +1,19 @@
+{
+  "type": "webhook",
+  "name": "cancel_booking",
+  "description": "Use to cancel an existing appointment only after collecting the caller's booking reference code and confirming they want to cancel. The reference code is required; never identify or authorize a booking by name.",
+  "api_schema": {
+    "url": "https://<N8N_HOST>/webhook/cancel-booking",
+    "method": "POST",
+    "path_params_schema": [],
+    "query_params_schema": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reference": { "type": "string", "value_type": "llm_prompt", "description": "The required booking reference code supplied by the caller, in GG-0000 form.", "required": true }
+      }
+    },
+    "request_headers": [{ "type": "value", "name": "Content-Type", "value": "application/json" }]
+  },
+  "response_timeout_secs": 30
+}
