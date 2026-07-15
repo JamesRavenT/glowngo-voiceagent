@@ -2,7 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Footer } from "@/components/layout/footer";
-import { about, salon, siteCopy } from "@/content";
+import { about, branches, salon, services, servicesCopy, siteCopy, stylists } from "@/content";
 import Home from "@/app/page";
 
 afterEach(cleanup);
@@ -38,6 +38,32 @@ describe("Home", () => {
 
     about.paragraphs.forEach((paragraph) => {
       expect(screen.getByText(paragraph)).toBeInTheDocument();
+    });
+  });
+
+  it("renders all services and surfaces consultation requirements from data", () => {
+    const { container } = render(<Home />);
+
+    expect(container.querySelectorAll("[data-service-id]")).toHaveLength(services.length);
+    const consultationService = services.find(
+      (service) => "requiresConsultation" in service && service.requiresConsultation,
+    );
+    const row = container.querySelector(`[data-service-id="${consultationService?.id}"]`);
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).getByText(servicesCopy.consultationRequired)).toBeInTheDocument();
+  });
+
+  it("renders all branches and their stylists", () => {
+    const { container } = render(<Home />);
+
+    expect(container.querySelectorAll("[data-branch-id]")).toHaveLength(branches.length);
+    expect(container.querySelectorAll("[data-stylist-id]")).toHaveLength(stylists.length);
+    branches.forEach((branch) => {
+      const article = container.querySelector(`[data-branch-id="${branch.id}"]`);
+      expect(article).not.toBeNull();
+      stylists.filter((stylist) => stylist.branchId === branch.id).forEach((stylist) => {
+        expect(within(article as HTMLElement).getByText(stylist.name)).toBeInTheDocument();
+      });
     });
   });
 
