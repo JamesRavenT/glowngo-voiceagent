@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Familjen_Grotesk, Inter_Tight, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { siteCopy } from "@/content/salon";
+import "@/app/globals.css";
 
 const familjenGrotesk = Familjen_Grotesk({
   variable: "--font-familjen-grotesk",
@@ -18,8 +21,8 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Glow & Go",
-  description: "Glow & Go voice agent demo",
+  title: siteCopy.metadataTitle,
+  description: siteCopy.metadataDescription,
 };
 
 export default function RootLayout({
@@ -32,7 +35,14 @@ export default function RootLayout({
       lang="en"
       className={`${familjenGrotesk.variable} ${interTight.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <a className="skip-link" href="#main-content">
+          {siteCopy.skipToContent}
+        </a>
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }

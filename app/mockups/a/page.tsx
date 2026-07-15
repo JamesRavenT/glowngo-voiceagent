@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import styles from "./styles.module.css";
+import styles from "@/app/mockups/a/styles.module.css";
 
 export default function ChairSide() {
   const [open, setOpen] = useState(false);
