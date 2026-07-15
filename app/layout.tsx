@@ -3,6 +3,7 @@ import { Familjen_Grotesk, Inter_Tight, JetBrains_Mono } from "next/font/google"
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { CallProvider } from "@/components/call/call-provider";
+import { FloatingCallButton } from "@/components/call/floating-call-button";
 import { siteCopy } from "@/content/salon";
 import "@/app/globals.css";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
+          <FloatingCallButton />
         </CallProvider>
       </body>
     </html>

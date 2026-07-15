@@ -11,6 +11,7 @@ export const contactCopy = {
   eyebrow: "Ready when you are",
   introduction: "Talk with the Glow & Go voice agent to ask a question, find an opening, or manage a demo booking.",
   callButton: "Talk to the voice agent",
+  floatingCallButton: "Call the salon voice agent",
   examplePhrasesHeading: "Try saying",
   quickReferenceHeading: "Service quick reference",
   quickReferenceCaption: "Glow & Go service durations and prices",

@@ -54,10 +54,22 @@
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .floating-call-button--pulse { animation: none; }
 }
 
 @layer components {
   .skip-link {
     @apply fixed left-4 top-4 z-[60] -translate-y-24 bg-gold-hi px-4 py-3 font-utility text-sm font-semibold text-ink transition-transform focus:translate-y-0;
+  }
+
+  @keyframes floating-call-heartbeat {
+    0%, 58%, 100% { box-shadow: 0 0 0 0 rgb(176 112 60 / 0); }
+    68% { box-shadow: 0 0 0 0.45rem rgb(176 112 60 / 0.22); }
+    78% { box-shadow: 0 0 0 0 rgb(176 112 60 / 0); }
+    86% { box-shadow: 0 0 0 0.3rem rgb(176 112 60 / 0.16); }
+  }
+
+  .floating-call-button--pulse {
+    animation: floating-call-heartbeat 3s ease-out infinite;
   }
 }

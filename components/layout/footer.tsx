@@ -6,7 +6,7 @@ const footerLinks = siteCopy.sections.slice(1);
 
 export function Footer() {
   return (
-    <footer className="border-t border-copper/50 bg-ink px-6 py-12 sm:px-10 lg:px-16">
+    <footer className="border-t border-copper/50 bg-ink px-6 pb-28 pt-12 sm:px-10 sm:pb-32 lg:px-16">
       <div className="mx-auto flex max-w-7xl flex-col gap-10">
         <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-start">
           <a href="#hero" className="w-fit">
