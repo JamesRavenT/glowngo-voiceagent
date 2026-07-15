@@ -1,9 +1,9 @@
-import { Section } from "@/components/layout/section";
 import { About } from "@/components/sections/about";
+import { Contact } from "@/components/sections/contact";
+import { Faq } from "@/components/sections/faq";
 import { Hero } from "@/components/sections/hero";
 import { Locations } from "@/components/sections/locations";
 import { Services } from "@/components/sections/services";
-import { siteCopy } from "@/content/salon";
 
 export default function Home() {
   return (
@@ -12,13 +12,8 @@ export default function Home() {
       <About />
       <Services />
       <Locations />
-      {siteCopy.sections.slice(4).map((section) => (
-        <Section
-          key={section.id}
-          id={section.id}
-          heading={section.heading}
-        />
-      ))}
+      <Faq />
+      <Contact />
     </main>
   );
 }

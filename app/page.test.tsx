@@ -4,12 +4,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import { Footer } from "@/components/layout/footer";
 import { about, branches, salon, services, servicesCopy, siteCopy, stylists } from "@/content";
 import Home from "@/app/page";
+import { CallProvider } from "@/components/call/call-provider";
 
 afterEach(cleanup);
 
+const renderHome = () => render(<CallProvider><Home /></CallProvider>);
+
 describe("Home", () => {
   it("renders sections in the documented order with the correct ids", () => {
-    const { container } = render(<Home />);
+    const { container } = renderHome();
     const sections = Array.from(container.querySelectorAll("section"));
 
     expect(sections.map((section) => section.id)).toEqual(
@@ -23,7 +26,7 @@ describe("Home", () => {
   });
 
   it("renders the salon tagline as exactly two synchronized headline lines", () => {
-    render(<Home />);
+    renderHome();
 
     const heading = screen.getByRole("heading", { level: 1, name: salon.tagline });
     const lines = Array.from(heading.children);
@@ -34,7 +37,7 @@ describe("Home", () => {
   });
 
   it("renders every About paragraph", () => {
-    render(<Home />);
+    renderHome();
 
     about.paragraphs.forEach((paragraph) => {
       expect(screen.getByText(paragraph)).toBeInTheDocument();
@@ -42,7 +45,7 @@ describe("Home", () => {
   });
 
   it("renders all services and surfaces consultation requirements from data", () => {
-    const { container } = render(<Home />);
+    const { container } = renderHome();
 
     expect(container.querySelectorAll("[data-service-id]")).toHaveLength(services.length);
     const consultationService = services.find(
@@ -54,7 +57,7 @@ describe("Home", () => {
   });
 
   it("renders all branches and their stylists", () => {
-    const { container } = render(<Home />);
+    const { container } = renderHome();
 
     expect(container.querySelectorAll("[data-branch-id]")).toHaveLength(branches.length);
     expect(container.querySelectorAll("[data-stylist-id]")).toHaveLength(stylists.length);

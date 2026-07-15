@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Familjen_Grotesk, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+import { CallProvider } from "@/components/call/call-provider";
 import { siteCopy } from "@/content/salon";
 import "@/app/globals.css";
 
@@ -36,12 +37,14 @@ export default function RootLayout({
       className={`${familjenGrotesk.variable} ${interTight.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <a className="skip-link" href="#main-content">
-          {siteCopy.skipToContent}
-        </a>
-        <Navbar />
-        {children}
-        <Footer />
+        <CallProvider>
+          <a className="skip-link" href="#main-content">
+            {siteCopy.skipToContent}
+          </a>
+          <Navbar />
+          {children}
+          <Footer />
+        </CallProvider>
       </body>
     </html>
   );
