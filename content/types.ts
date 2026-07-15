@@ -16,6 +16,7 @@ export type WeeklyHours = Readonly<Record<DayOfWeek, OpeningHours>>;
 export interface Salon {
   readonly name: string;
   readonly tagline: string;
+  readonly heroHeadlineLines: readonly string[];
   readonly timezone: string;
   readonly disclaimer: string;
 }

@@ -1,9 +1,11 @@
-import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { Footer } from "@/components/layout/footer";
-import { salon, siteCopy } from "@/content/salon";
+import { about, salon, siteCopy } from "@/content";
 import Home from "@/app/page";
+
+afterEach(cleanup);
 
 describe("Home", () => {
   it("renders sections in the documented order with the correct ids", () => {
@@ -17,6 +19,25 @@ describe("Home", () => {
       expect(
         within(sections[index]).getByRole("heading", { name: section.heading }),
       ).toBeInTheDocument();
+    });
+  });
+
+  it("renders the salon tagline as exactly two synchronized headline lines", () => {
+    render(<Home />);
+
+    const heading = screen.getByRole("heading", { level: 1, name: salon.tagline });
+    const lines = Array.from(heading.children);
+
+    expect(lines).toHaveLength(2);
+    expect(lines.map((line) => line.textContent)).toEqual(salon.heroHeadlineLines);
+    expect(salon.heroHeadlineLines.join(" ")).toBe(salon.tagline);
+  });
+
+  it("renders every About paragraph", () => {
+    render(<Home />);
+
+    about.paragraphs.forEach((paragraph) => {
+      expect(screen.getByText(paragraph)).toBeInTheDocument();
     });
   });
 

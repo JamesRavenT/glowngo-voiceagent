@@ -1,3 +1,4 @@
+export { about } from "./about";
 export { branches } from "./branches";
 export { faq } from "./faq";
 export { salon, SALON_TIMEZONE, siteCopy } from "./salon";

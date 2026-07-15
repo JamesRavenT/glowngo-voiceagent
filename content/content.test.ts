@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { branches, faq, services, stylists } from "./index";
+import { about, branches, faq, services, stylists } from "./index";
 
 const expectUniqueIds = (items: readonly { id: string }[]) => {
   expect(new Set(items.map(({ id }) => id)).size).toBe(items.length);
@@ -32,5 +32,11 @@ describe("content invariants", () => {
       expect(Number.isInteger(service.priceCents)).toBe(true);
       expect(service.priceCents).toBeGreaterThan(0);
     }
+  });
+
+  it("keeps stylists named in the About copy in the stylist roster", () => {
+    const stylistNames = new Set(stylists.map(({ name }) => name));
+
+    expect(about.featuredStylistNames.every((name) => stylistNames.has(name))).toBe(true);
   });
 });
