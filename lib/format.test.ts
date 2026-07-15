@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDuration, formatPrice } from "@/lib/format";
+import { formatCallDuration, formatDuration, formatPrice } from "@/lib/format";
 
 describe("formatPrice", () => {
   it("omits cents for whole-dollar prices", () => {
@@ -23,5 +23,14 @@ describe("formatDuration", () => {
     [240, "4 hr"],
   ])("formats %i minutes as %s", (minutes, expected) => {
     expect(formatDuration(minutes)).toBe(expected);
+  });
+});
+
+describe("formatCallDuration", () => {
+  it.each([
+    [0, "00:00"], [59, "00:59"], [60, "01:00"], [61, "01:01"],
+    [600, "10:00"], [3599, "59:59"],
+  ])("formats %i seconds as %s", (seconds, expected) => {
+    expect(formatCallDuration(seconds)).toBe(expected);
   });
 });

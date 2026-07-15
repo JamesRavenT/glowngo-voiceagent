@@ -2,14 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PhoneCall } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
 import { useCall } from "@/components/call/call-provider";
 import { contactCopy } from "@/content";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 export function FloatingCallButton() {
   const { open } = useCall();
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [isExpanded, setIsExpanded] = useState(true);
   const lastScrollY = useRef(0);
 

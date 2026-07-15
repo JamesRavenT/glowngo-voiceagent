@@ -5,20 +5,12 @@ import { CallProvider, useCall } from "@/components/call/call-provider";
 import { FloatingCallButton } from "@/components/call/floating-call-button";
 import { contactCopy } from "@/content";
 
-const motionPreference = vi.hoisted(() => ({ reduced: false }));
-
-vi.mock("motion/react", async (importOriginal) => {
-  const original = await importOriginal<typeof import("motion/react")>();
-  return { ...original, useReducedMotion: () => motionPreference.reduced };
-});
-
 function CallState() {
   const { source } = useCall();
   return <output>{source ?? "closed"}</output>;
 }
 
 function setReducedMotion(matches: boolean) {
-  motionPreference.reduced = matches;
   vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({
     matches,
     addEventListener: vi.fn(),

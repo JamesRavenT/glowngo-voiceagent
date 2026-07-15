@@ -18,3 +18,8 @@ export function formatDuration(minutes: number): string {
 
   return `${hours} hr ${remainingMinutes} min`;
 }
+
+export function formatCallDuration(elapsedSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(elapsedSeconds));
+  return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+}
