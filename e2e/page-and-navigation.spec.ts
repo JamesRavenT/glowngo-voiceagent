@@ -1,0 +1,49 @@
+import { expect, test } from "@playwright/test";
+
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+});
+
+test("sections render in the intended order and the disclaimer is visible", async ({ page }) => {
+  const sectionIds = await page.locator("main > section").evaluateAll((sections) =>
+    sections.map((section) => section.id),
+  );
+  expect(sectionIds).toEqual(["hero", "about", "services", "locations", "faq", "contact"]);
+
+  const disclaimer = page.locator("footer").getByText(/demonstration built by James Raven Tabag/i);
+  await disclaimer.scrollIntoViewIfNeeded();
+  await expect(disclaimer).toBeVisible();
+});
+
+test("navigation scrolls to a section and identifies the active location", async ({ page, isMobile }) => {
+  if (isMobile) {
+    const menuButton = page.getByRole("button", { name: "Open navigation menu", exact: true });
+    await menuButton.focus();
+    await page.keyboard.press("Enter");
+    await page.getByRole("dialog", { name: "Primary navigation" }).getByRole("link", { name: "Services" }).click();
+  } else {
+    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Services" }).click();
+  }
+
+  await expect(page).toHaveURL(/#services$/);
+  await expect(page.locator("#services")).toBeInViewport();
+  if (isMobile) {
+    const menuButton = page.getByRole("button", { name: "Open navigation menu", exact: true });
+    await menuButton.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog", { name: "Primary navigation" }).getByRole("link", { name: "Services" }))
+      .toHaveAttribute("aria-current", "location");
+  } else {
+    await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Services" }))
+      .toHaveAttribute("aria-current", "location");
+  }
+});
+
+test("navbar changes from transparent over the hero to solid after scrolling", async ({ page }) => {
+  const navbar = page.locator("header");
+  await expect(navbar).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+
+  await page.evaluate(() => window.scrollTo(0, document.querySelector("#services")!.getBoundingClientRect().top + window.scrollY));
+  await expect.poll(async () => navbar.evaluate((element) => getComputedStyle(element).backgroundColor))
+    .not.toBe("rgba(0, 0, 0, 0)");
+});

@@ -4,7 +4,14 @@ const { basename, resolve } = require("node:path");
 
 const MAX_DIRECTORY_BYTES = 50 * 1024 * 1024;
 const MAX_DIRECTORY_FILES = 1_000;
-const ALLOWED_LARGE_DIRECTORIES = new Set(["node_modules", ".next", ".git"]);
+const ALLOWED_LARGE_DIRECTORIES = new Set([
+  "node_modules",
+  ".next",
+  ".git",
+  "test-results",
+  "playwright-report",
+  ".playwright",
+]);
 
 interface DirectoryStats {
   path: string;
