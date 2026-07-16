@@ -79,9 +79,12 @@ describe("Home", () => {
     stylists.forEach((stylist) => expect(screen.queryByText(stylist.name)).not.toBeInTheDocument());
   });
 
-  it("renders the standing demo disclaimer in the footer", () => {
+  it("renders only the copyright in the footer", () => {
     render(<Footer />);
 
-    expect(screen.getByText(salon.disclaimer)).toBeInTheDocument();
+    expect(screen.getByText(siteCopy.footerCopyright)).toBeInTheDocument();
+    expect(screen.queryByText(salon.disclaimer)).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 });
