@@ -1,6 +1,14 @@
 # 0002 — Embla for the mobile carousels
 
-**Status:** Accepted (v0.1.1), amended 2026-07-16 — scope reduced to one carousel · **Date:** 2026-07-16
+**Status:** Superseded (v0.1.2) — Embla removed entirely · **Date:** 2026-07-16
+
+## Superseded (v0.1.2)
+
+The one remaining carousel (mobile Services) was dropped: James asked for all 12 services on a single
+compact screen instead of a 2-slide swipe. With Locations already a plain list, nothing used a
+carousel, so `embla-carousel-react` and the shadcn `carousel` component were removed. The v0.1.1
+amendment below already flagged that a single 2-slide carousel was thin justification for a
+dependency — this closes that out. No carousel remains in the project.
 
 ## Amendment
 
