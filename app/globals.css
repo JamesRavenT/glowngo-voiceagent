@@ -63,6 +63,9 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .floating-call-button--pulse { animation: none; }
+  .call-dialog,
+  .call-dialog::backdrop,
+  .call-dialog__panel { transition: none; }
 }
 
 @layer components {
@@ -126,9 +129,20 @@
     padding: 0;
     background: transparent;
     color: var(--color-cream);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 280ms ease-out,
+      transform 280ms ease-out,
+      display 280ms allow-discrete,
+      overlay 280ms allow-discrete;
   }
 
-  .call-dialog::backdrop { background: rgb(11 10 9 / 0.68); }
+  .call-dialog::backdrop {
+    background: rgb(11 10 9 / 0.68);
+    transition: background-color 280ms ease-out;
+    transition-behavior: allow-discrete;
+  }
 
   .call-dialog__panel {
     position: relative;
@@ -138,6 +152,15 @@
     background: linear-gradient(145deg, rgb(11 10 9 / 0.98), rgb(82 49 25 / 0.98));
     padding: 1.25rem;
     box-shadow: 0 0 3rem rgb(138 90 43 / 0.7);
+  }
+
+  @starting-style {
+    .call-dialog[open]::backdrop { background: transparent; }
+
+    .call-dialog[open] {
+      opacity: 0;
+      transform: translateY(8px) scale(0.97);
+    }
   }
 
   .call-dialog__panel::after {
