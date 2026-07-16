@@ -5,12 +5,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("sections render in the intended order and the disclaimer is visible", async ({ page }) => {
-  const sectionIds = await page.locator("main > section").evaluateAll((sections) =>
+  const sectionIds = await page.locator("main > section, main > [data-snap-panel] > section").evaluateAll((sections) =>
     sections.map((section) => section.id),
   );
   expect(sectionIds).toEqual(["hero", "about", "services", "locations", "faq", "contact"]);
 
-  const disclaimer = page.locator("footer").getByText(/demonstration built by James Raven Tabag/i);
+  const disclaimer = page.locator("#hero").getByText(/demonstration built by James Raven Tabag/i);
   await disclaimer.scrollIntoViewIfNeeded();
   await expect(disclaimer).toBeVisible();
 });
@@ -40,7 +40,7 @@ test("navigation scrolls to a section and identifies the active location", async
 });
 
 test("navbar changes from transparent over the hero to solid after scrolling", async ({ page }) => {
-  const navbar = page.locator("header");
+  const navbar = page.getByRole("banner");
   await expect(navbar).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 
   await page.evaluate(() => window.scrollTo(0, document.querySelector("#services")!.getBoundingClientRect().top + window.scrollY));

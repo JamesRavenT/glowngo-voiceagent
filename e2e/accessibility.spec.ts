@@ -14,7 +14,9 @@ test("skip link is first in the keyboard order and reaches main content", async 
 });
 
 test("keyboard-only users can open and close the modal, with textual speaker identities", async ({ page }) => {
-  const callButton = page.getByRole("button", { name: "Call the salon voice agent", exact: true });
+  const callButton = page
+    .getByRole("button", { name: "Book now — call Gigi, the Glow & Go voice agent", exact: true })
+    .and(page.locator("button.floating-call-button"));
   await callButton.focus();
   await page.keyboard.press("Enter");
   const transcript = page.getByLabel("Call transcript");

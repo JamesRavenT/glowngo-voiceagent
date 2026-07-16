@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const floatingButton = (page: Page) => page.getByRole("button", { name: "Call the salon voice agent", exact: true });
+const floatingButton = (page: Page) => page
+  .getByRole("button", { name: "Book now — call Gigi, the Glow & Go voice agent", exact: true })
+  .and(page.locator("button.floating-call-button"));
 const dialog = (page: Page) => page.getByRole("dialog", { name: "Glow & Go voice assistant" });
 
 test.beforeEach(async ({ page }) => {
@@ -19,7 +21,7 @@ test("opens from the floating button and ends the call", async ({ page }) => {
 });
 
 test("opens from Contact and Escape restores focus", async ({ page }) => {
-  const contactButton = page.getByRole("button", { name: "Talk to the voice agent", exact: true });
+  const contactButton = page.locator("#contact").getByRole("button").filter({ hasText: "Talk to Gigi" });
   await contactButton.scrollIntoViewIfNeeded();
   await contactButton.click();
   await expect(dialog(page)).toBeVisible();
