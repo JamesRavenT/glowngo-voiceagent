@@ -1,10 +1,13 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
+import { motion } from "motion/react";
 import Image, { getImageProps } from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { salon, siteCopy } from "@/content/salon";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 const navigationLinks = siteCopy.sections.filter((section) => section.id !== "hero");
 const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -41,6 +44,7 @@ export function Navbar() {
   const [activeSection, setActiveSection] = useState("hero");
   const [heroVisible, setHeroVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -114,8 +118,19 @@ export function Navbar() {
           <Menu aria-hidden="true" />
         </button>
       </nav>
-      {menuOpen && (
-        <div ref={menuRef} id="mobile-navigation" role="dialog" aria-modal="true" aria-label={siteCopy.navigationLabel} className="fixed inset-0 z-50 flex flex-col bg-ink px-6 py-5 md:hidden">
+      {menuOpen && typeof document !== "undefined" && createPortal(
+        <motion.div
+          ref={menuRef}
+          id="mobile-navigation"
+          role="dialog"
+          aria-modal="true"
+          aria-label={siteCopy.navigationLabel}
+          initial={prefersReducedMotion ? false : { opacity: 0, x: "-100%" }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-0 z-50 flex flex-col px-6 py-5 md:hidden"
+          style={{ background: "linear-gradient(90deg, rgb(11 10 9 / 0.98) 0%, rgb(11 10 9 / 0.95) 58%, rgb(11 10 9 / 0.35) 100%)" }}
+        >
           <div className="flex h-14 items-center justify-between">
             <Image src="/brand/Navbar Text.png" alt={`${salon.name} wordmark`} width={612} height={408} className="h-14 w-[84px] object-contain" />
             <button type="button" className="inline-flex size-11 shrink-0 items-center justify-center rounded-sm text-cream" aria-label={siteCopy.closeMenuLabel} onClick={() => { closeMenu(); menuButtonRef.current?.focus(); }}>
@@ -131,7 +146,8 @@ export function Navbar() {
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>,
+        document.body,
       )}
     </header>
   );
