@@ -120,5 +120,6 @@ reliably follow links — keep both in sync when architecture changes.
 
 ## Chunk status
 
-Shipped: **v0.1.1** — design and structure pass (`docs/plans/v0.1.1.md`) and **v0.1.0**
-(`docs/plans/v0.1.0.md`). See `docs/CHANGELOG.md` for what changed.
+Shipped: **v0.1.2** — review fixes (snap, mobile menu, services, FAQ, animations), **v0.1.1** —
+design and structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
+`docs/CHANGELOG.md` for what changed.

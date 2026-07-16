@@ -3,6 +3,33 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] — 2026-07-17
+
+Bug fixes and interaction changes from James's review.
+
+### Changed
+- **Snap scrolling is now assertive** — one wheel/swipe/arrow gesture moves exactly one section and
+  locks (was free-scroll-then-settle). Trackpad momentum collapses to a single move.
+  `prefers-reduced-motion` disables the hijack entirely (native scroll).
+- Mobile Services shows all 12 services on one screen — the carousel is gone, and with it
+  `embla-carousel-react` (ADR 0002 superseded).
+- FAQ mobile stacks questions directly under the heading instead of vertically centered.
+- Section eyebrows dropped the "NN /" numbering (e.g. "03 / LOCATIONS" → "LOCATIONS").
+- Navbar logo enlarged.
+- Locations desktop: branch blocks centered in their ovals; "Find your light." shrunk so it no longer
+  overlaps the grid at laptop widths.
+
+### Added
+- Mobile menu: left-to-right gradient (dark left, transparent right) and a slide/fade entrance
+  animation.
+- Call modal: fade + rise entrance animation (`@starting-style`), reduced-motion instant.
+
+### Fixed
+- Mobile menu panel was see-through (covered only the 80px navbar height) because it sat inside the
+  `backdrop-filter`ed header, which became its containing block; now portaled to `document.body`.
+- Navbar active-section highlight lagged during the animated snap; section-snap now signals the
+  landed section to the navbar.
+
 ## [0.1.1] — 2026-07-16
 
 Design and structure pass. Plan: [plans/v0.1.1.md](plans/v0.1.1.md).
