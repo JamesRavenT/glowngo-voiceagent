@@ -7,6 +7,7 @@ export function Services() {
   return (
     <section
       id="services"
+      data-snap-panel
       aria-labelledby="services-heading"
       className="border-b border-gold-lo/30 bg-ink px-6 py-24 sm:px-10 sm:py-32 lg:px-16 lg:py-40"
     >

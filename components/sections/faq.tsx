@@ -20,7 +20,7 @@ export function Faq() {
   };
 
   return (
-    <section id="faq" aria-labelledby="faq-heading" className="border-b border-gold-lo/30 bg-ink px-6 py-24 sm:px-10 sm:py-32 lg:px-16 lg:py-40">
+    <section id="faq" data-snap-panel aria-labelledby="faq-heading" className="border-b border-gold-lo/30 bg-ink px-6 py-24 sm:px-10 sm:py-32 lg:px-16 lg:py-40">
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[minmax(12rem,0.7fr)_minmax(0,2fr)] lg:gap-20">
         <h2 id="faq-heading" className="font-utility text-xs font-medium uppercase tracking-[0.22em] text-copper">{heading}</h2>
         <div className="border-t border-gold-lo/40">

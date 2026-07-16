@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Familjen_Grotesk, Inter_Tight, JetBrains_Mono } from "next/font/google";
-import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { CallProvider } from "@/components/call/call-provider";
 import { FloatingCallButton } from "@/components/call/floating-call-button";
@@ -45,7 +44,6 @@ export default function RootLayout({
           </a>
           <Navbar />
           {children}
-          <Footer />
           <FloatingCallButton />
           <CallSessionSelector />
         </CallProvider>

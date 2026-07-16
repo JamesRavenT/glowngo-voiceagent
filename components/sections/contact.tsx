@@ -12,7 +12,7 @@ export function Contact({ bookingSheetUrl = publicEnv.bookingSheetUrl }: { booki
   const heading = siteCopy.sections.find((section) => section.id === "contact")!.heading;
 
   return (
-    <section id="contact" aria-labelledby="contact-heading" className="border-b border-gold-lo/30 bg-ink px-6 py-24 sm:px-10 sm:py-32 lg:px-16 lg:py-40">
+    <section id="contact" aria-labelledby="contact-heading" className="min-h-0 flex-1 overflow-hidden border-b border-gold-lo/30 bg-ink px-6 py-24 sm:px-10 sm:py-32 lg:px-16 lg:py-40">
       <div className="mx-auto max-w-7xl">
         <p className="font-utility text-xs uppercase tracking-[0.22em] text-copper">{contactCopy.eyebrow}</p>
         <h2 id="contact-heading" className="mt-5 max-w-4xl font-display text-5xl tracking-[-0.05em] text-cream sm:text-7xl">{heading}</h2>
