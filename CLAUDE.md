@@ -103,7 +103,22 @@ pnpm test         # unit tests
 pnpm test:e2e     # playwright
 ```
 
+## Documentation
+
+`docs/` is the project's documentation and lives in the repo. Plans, decisions, and the runbook all
+belong there — never in a path outside the repository.
+
+| Where | What |
+|---|---|
+| `docs/plans/` | Implementation plan per release. Current: `docs/plans/v0.1.1.md`. |
+| `docs/decisions/` | ADRs. Write one when a decision has reasoning worth keeping. |
+| `docs/CHANGELOG.md` | Update as part of the release chunk, not after. |
+| `docs/architecture.md`, `design.md`, `requirements.md` | Human-facing reference. |
+
+This file and `AGENTS.md` deliberately restate some of `docs/`. Agents read them directly and do not
+reliably follow links — keep both in sync when architecture changes.
+
 ## Chunk status
 
-Plan: `C:\Users\Raven\.claude\plans\golden-dancing-sloth.md`. Chunks 0–13; see the task list for
-live status. Target: **v0.1.0**.
+Current: **v0.1.1** — design and structure pass. Plan: `docs/plans/v0.1.1.md`. See the task list for
+live status. Shipped: **v0.1.0** (`docs/plans/v0.1.0.md`).

@@ -15,6 +15,13 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000). No configuration is required; the app defaults safely to simulated mode.
 
+## Documentation
+
+Full documentation is in [`docs/`](docs/) — [requirements](docs/requirements.md),
+[architecture](docs/architecture.md), [design](docs/design.md), the
+[going-live runbook](docs/runbook.md), [release plans](docs/plans/),
+[decision records](docs/decisions/), and the [changelog](docs/CHANGELOG.md).
+
 ## Architecture
 
 ```text
@@ -29,7 +36,9 @@ The browser is never in the booking path. In live mode, the Next.js app has no b
 
 ## Going live
 
-Complete these steps in order; each produces a value needed by the next step.
+Complete these steps in order; each produces a value needed by the next step. For the detailed
+walkthrough — including the n8n Docker setup and the security gap to close first — see
+[`docs/runbook.md`](docs/runbook.md).
 
 1. **Set up Google Cloud and Sheets.** Create a Google Cloud project, enable the Google Sheets API, and create a service account. Create the bookings spreadsheet using [`artifacts/google-sheets/schema.md`](artifacts/google-sheets/schema.md), then share the sheet with the service account email. Record the spreadsheet ID for n8n. The sheet is publicly linked from the demo, so seed and maintain it with synthetic rows only.
 

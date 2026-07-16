@@ -1,0 +1,92 @@
+# Design
+
+## Direction
+
+**Modernized aesthetic salon** — editorial and warm, with Tron's geometry and light discipline but
+none of its flash. Hard edges, controlled glow, backlit volumetrics, generous negative space. It
+should read as a fashion house that happens to be lit by a machine, not as a sci-fi film.
+
+Restraint is the point. See [ADR 0003](decisions/0003-tron-geometry-in-brand-copper.md) for why the
+palette stays copper and never becomes cyan.
+
+## Palette
+
+Derived from the supplied brand assets, not invented.
+
+| Token | Value | Use |
+|---|---|---|
+| Ink | `#0B0A09` | Near-black background |
+| Copper | `#B0703C` | Primary accent, borders, CTA |
+| Gold | gradient | Wordmark, highlights, active state |
+| Cream | warm off-white | Body text |
+
+## Brand assets
+
+`public/brand/` holds PNG sources served through `next/image`, which negotiates format and size on
+its own — do **not** hand-build a WebP pipeline.
+
+| Asset | Size | Use |
+|---|---|---|
+| `Navbar.png` | 500×500 (1:1) | Logo mark — **desktop** navbar |
+| `Navbar Text.png` | 612×408 (1.5:1) | Wordmark — **mobile** navbar |
+| `Hero.png` | 1717×916 | Hero background |
+| `Location.png` | 1822×863 | Source for the storefront crop |
+| `storefront.png` | 1000×760 | Locations section |
+
+The two navbar assets have **different aspect ratios**; they are not interchangeable, and hardcoded
+`width`/`height` that suit one will clip the other.
+
+The one real crop is `Location.png` → `storefront.png`, produced reproducibly by
+`scripts/crop-storefront.ts` to remove street cues that clash with the US addresses.
+
+## Motion
+
+| Behavior | Spec |
+|---|---|
+| Section snap | GSAP ScrollTrigger, `duration: { min: 0.7, max: 1.4 }`, `ease: "power2.inOut"`, directional |
+| Component motion | Motion for React |
+| Reduced motion | `prefers-reduced-motion` disables snapping entirely and falls back to normal scroll |
+
+Snapping is deliberately *slow*. The browser's native scroll-snap was rejected because it gives no
+control over duration and felt too abrupt.
+
+## Layout
+
+**Section order:** Navbar → Hero → About → Services → Locations → FAQ → Contact → Footer.
+
+FAQ precedes Contact so objections are answered before the ask.
+
+**Panels.** Every section is one viewport tall. The exception is the final panel, where Contact and
+the Footer share a single screen.
+
+| Section | Desktop | Mobile |
+|---|---|---|
+| Services | 3 columns — Cuts & Styling, Treatments, Color Services | 3-page carousel |
+| Locations | 2×2 grid | 4-page carousel |
+
+Full-height panels are a hard content budget. Weekly hours are shown as grouped ranges rather than
+seven rows, and services show name/duration/price without descriptions. Both still reach the agent in
+full through the knowledge base — the site just stops shouting them.
+
+**Floating call button:** desktop bottom-right, labeled. Mobile bottom-right, icon-only ~56px, above
+`env(safe-area-inset-bottom)`; collapses on scroll-down, re-expands on scroll-up. No full-width
+bottom bar — it fights browser chrome and reads as an ad.
+
+## The call modal
+
+A hologram in copper/gold on near-black: scanlines, volumetric glow, floating projection. Sci-fi
+*form* in *brand color*.
+
+It is **centered in the viewport**. Through v0.1.0 it was anchored to the floating button with a
+projection cone; the cone was removed in v0.1.1 when the panel was centered, because a beam
+originating from nothing is worse than no beam.
+
+## Accessibility
+
+Not a finishing pass — a constraint.
+
+- Visible label and accessible name may differ where the visible text is short for design reasons.
+  The floating button reads "Book Now" but announces "Book now — call the salon voice agent", because
+  a screen-reader user deserves to know a microphone is about to open.
+- Snap scrolling must never trap keyboard navigation.
+- `prefers-reduced-motion` is honored throughout.
