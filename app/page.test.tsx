@@ -36,6 +36,13 @@ describe("Home", () => {
     expect(salon.heroHeadlineLines.join(" ")).toBe(salon.tagline);
   });
 
+  it("renders the standing demo disclaimer in the hero", () => {
+    renderHome();
+
+    const hero = screen.getByRole("region", { name: salon.tagline });
+    expect(within(hero).getByText(salon.disclaimer)).toBeInTheDocument();
+  });
+
   it("renders every About paragraph", () => {
     renderHome();
 

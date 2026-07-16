@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { HeroCallButton } from "@/components/sections/hero-call-button";
 import { salon, siteCopy } from "@/content";
 
 export function Hero() {
@@ -37,6 +38,10 @@ export function Hero() {
             </span>
           ))}
         </h1>
+        <HeroCallButton />
+        <p className="mt-4 max-w-2xl text-xs leading-relaxed text-cream/85 sm:mt-5 sm:text-sm">
+          {salon.disclaimer}
+        </p>
       </div>
     </section>
   );

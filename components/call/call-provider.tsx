@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
-export type CallSource = "contact" | "floating";
+export type CallSource = "contact" | "floating" | "hero";
 
 type CallContextValue = {
   isOpen: boolean;
