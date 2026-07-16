@@ -5,6 +5,10 @@ import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { type ReactNode, useRef } from "react";
 
+import {
+  SECTION_SNAP_LAND_EVENT,
+  type SectionSnapLandDetail,
+} from "@/lib/section-snap-events";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 gsap.registerPlugin(useGSAP, ScrollToPlugin);
@@ -57,6 +61,18 @@ export function SectionSnap({ children }: { children: ReactNode }) {
         currentPanelIndex = getCurrentPanelIndex(getPanelTops(), window.scrollY);
       };
 
+      const announceLanding = () => {
+        const panel = panels[currentPanelIndex];
+        const id = panel.id || panel.querySelector<HTMLElement>("section[id]")?.id;
+        if (!id) return;
+
+        window.dispatchEvent(
+          new CustomEvent<SectionSnapLandDetail>(SECTION_SNAP_LAND_EVENT, {
+            detail: { id },
+          }),
+        );
+      };
+
       const clearUnlockTimer = () => {
         if (unlockTimer === undefined) return;
         window.clearTimeout(unlockTimer);
@@ -74,6 +90,8 @@ export function SectionSnap({ children }: { children: ReactNode }) {
       };
 
       const finishAnimation = () => {
+        updateCurrentPanel();
+        announceLanding();
         animationFinished = true;
         scrollTween = undefined;
         scheduleUnlock();
@@ -295,6 +313,7 @@ export function SectionSnap({ children }: { children: ReactNode }) {
         const scrollTarget = panelIndex >= 0 ? panels[panelIndex] : target;
         gsap.set(window, { scrollTo: { y: scrollTarget, autoKill: false } });
         updateCurrentPanel();
+        announceLanding();
       };
 
       updateCurrentPanel();

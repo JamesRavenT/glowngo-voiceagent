@@ -7,6 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { salon, siteCopy } from "@/content/salon";
+import {
+  SECTION_SNAP_LAND_EVENT,
+  type SectionSnapLandDetail,
+} from "@/lib/section-snap-events";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 const navigationLinks = siteCopy.sections.filter((section) => section.id !== "hero");
@@ -49,6 +53,9 @@ export function Navbar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const handleSectionSnapLand = (event: Event) => {
+      setActiveSection((event as CustomEvent<SectionSnapLandDetail>).detail.id);
+    };
     const sections = siteCopy.sections
       .map(({ id }) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null);
@@ -64,7 +71,11 @@ export function Navbar() {
       { rootMargin: "-72px 0px -55%", threshold: [0, 0.15, 0.5] },
     );
     sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    window.addEventListener(SECTION_SNAP_LAND_EVENT, handleSectionSnapLand);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener(SECTION_SNAP_LAND_EVENT, handleSectionSnapLand);
+    };
   }, []);
 
   useEffect(() => {
