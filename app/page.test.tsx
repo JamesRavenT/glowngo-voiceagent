@@ -63,18 +63,20 @@ describe("Home", () => {
     expect(within(row as HTMLElement).getByText(servicesCopy.consultationRequired)).toBeInTheDocument();
   });
 
-  it("renders all branches and their stylists", () => {
+  it("renders every branch's contact details and grouped hours without stylist rosters", () => {
     const { container } = renderHome();
 
     expect(container.querySelectorAll("[data-branch-id]")).toHaveLength(branches.length);
-    expect(container.querySelectorAll("[data-stylist-id]")).toHaveLength(stylists.length);
+    expect(container.querySelectorAll("[data-stylist-id]")).toHaveLength(0);
     branches.forEach((branch) => {
       const article = container.querySelector(`[data-branch-id="${branch.id}"]`);
       expect(article).not.toBeNull();
-      stylists.filter((stylist) => stylist.branchId === branch.id).forEach((stylist) => {
-        expect(within(article as HTMLElement).getByText(stylist.name)).toBeInTheDocument();
-      });
+      expect(within(article as HTMLElement).getByRole("heading", { name: branch.name })).toBeInTheDocument();
+      expect(within(article as HTMLElement).getByText(branch.address)).toBeInTheDocument();
+      expect(within(article as HTMLElement).getByRole("link", { name: branch.phone })).toBeInTheDocument();
+      expect(within(article as HTMLElement).getByText(/Tue–Sat 9–7 · Sun 10–5 · Mon closed/)).toBeInTheDocument();
     });
+    stylists.forEach((stylist) => expect(screen.queryByText(stylist.name)).not.toBeInTheDocument());
   });
 
   it("renders the standing demo disclaimer in the footer", () => {
