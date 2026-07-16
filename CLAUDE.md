@@ -120,5 +120,5 @@ reliably follow links — keep both in sync when architecture changes.
 
 ## Chunk status
 
-Current: **v0.1.1** — design and structure pass. Plan: `docs/plans/v0.1.1.md`. See the task list for
-live status. Shipped: **v0.1.0** (`docs/plans/v0.1.0.md`).
+Shipped: **v0.1.1** — design and structure pass (`docs/plans/v0.1.1.md`) and **v0.1.0**
+(`docs/plans/v0.1.0.md`). See `docs/CHANGELOG.md` for what changed.
