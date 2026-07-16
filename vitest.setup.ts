@@ -1,5 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 
+class ObserverStub {
+  disconnect() {}
+  observe() {}
+  unobserve() {}
+}
+
+globalThis.IntersectionObserver = ObserverStub as unknown as typeof IntersectionObserver;
+globalThis.ResizeObserver = ObserverStub as unknown as typeof ResizeObserver;
+
 function createMediaQueryList(media: string): MediaQueryList {
   const eventTarget = new EventTarget();
   const legacyListeners = new Set<NonNullable<MediaQueryList["onchange"]>>();
