@@ -65,7 +65,6 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
       onClose={handleClosed}
       className="call-dialog"
     >
-      <div aria-hidden="true" className="call-dialog__cone" />
       <section className="call-dialog__panel">
         <header className="flex items-start justify-between gap-6 font-utility text-[0.65rem] uppercase tracking-[0.16em] text-gold-hi">
           <div>

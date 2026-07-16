@@ -63,7 +63,6 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .floating-call-button--pulse { animation: none; }
-  .call-dialog__cone { animation: none; }
 }
 
 @layer components {
@@ -84,9 +83,10 @@
 
   .call-dialog {
     position: fixed;
-    inset: auto max(1.25rem, env(safe-area-inset-right)) calc(max(1.25rem, env(safe-area-inset-bottom)) + 5.5rem) auto;
+    inset: 0;
+    margin: auto;
     width: min(28rem, calc(100vw - 2rem));
-    max-height: calc(100svh - 7.5rem);
+    max-height: calc(100svh - 2rem);
     overflow: visible;
     border: 0;
     padding: 0;
@@ -96,23 +96,9 @@
 
   .call-dialog::backdrop { background: rgb(11 10 9 / 0.68); }
 
-  .call-dialog__cone {
-    position: absolute;
-    right: 0.75rem;
-    bottom: -6.25rem;
-    z-index: -1;
-    width: 16rem;
-    height: 11rem;
-    clip-path: polygon(49% 100%, 0 0, 100% 0);
-    background: repeating-linear-gradient(0deg, transparent 0 4px, rgb(176 112 60 / 0.75) 5px 6px), linear-gradient(15deg, transparent 3%, #b0703c 49%, transparent 96%);
-    opacity: 0.3;
-    animation: call-cone-sweep 2.8s linear infinite;
-    pointer-events: none;
-  }
-
   .call-dialog__panel {
     position: relative;
-    max-height: calc(100svh - 7.5rem);
+    max-height: calc(100svh - 2rem);
     overflow: hidden;
     border: 1px solid var(--color-copper);
     background: linear-gradient(145deg, rgb(11 10 9 / 0.98), rgb(82 49 25 / 0.98));
@@ -139,12 +125,7 @@
     scrollbar-color: var(--color-copper) transparent;
   }
 
-  @keyframes call-cone-sweep {
-    50% { opacity: 0.46; transform: scaleX(0.93); }
-  }
-
   @media (min-width: 48rem) {
-    .call-dialog { right: 2rem; bottom: 7rem; }
     .call-dialog__panel { padding: 1.5rem; }
   }
 }
