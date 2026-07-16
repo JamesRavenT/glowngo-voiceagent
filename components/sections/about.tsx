@@ -11,7 +11,7 @@ export function About() {
       <div className="mx-auto flex h-full max-w-7xl flex-col justify-center gap-5 lg:relative lg:block">
         <div className="about-orbit flex shrink-0 flex-col justify-center lg:absolute lg:left-[3%] lg:top-[10%] lg:h-[72%] lg:w-[45%] lg:px-[4vw] lg:text-center">
           <p className="font-utility text-[0.65rem] font-medium uppercase tracking-[0.22em] text-copper">
-            01 / {about.heading}
+            {about.heading}
           </p>
           <h2 id="about-heading" aria-label={about.heading} className="mt-2 max-w-[20ch] font-display text-[2.35rem] font-normal leading-[0.92] tracking-[-0.045em] text-cream sm:text-6xl lg:mx-auto lg:text-[clamp(3.2rem,5.4vw,5.5rem)]">
             {about.lead}

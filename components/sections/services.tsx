@@ -84,7 +84,7 @@ export function Services() {
 
       <header className="relative z-10 mx-auto w-full max-w-7xl shrink-0 lg:text-center">
         <p className="font-utility text-[0.65rem] uppercase tracking-[0.2em] text-copper">
-          02 / {heading}
+          {heading}
         </p>
         <h2
           id="services-heading"

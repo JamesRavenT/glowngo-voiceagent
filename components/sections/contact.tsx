@@ -16,7 +16,7 @@ export function Contact({ bookingSheetUrl = publicEnv.bookingSheetUrl }: { booki
     <section id="contact" aria-labelledby="contact-heading" className="nocturne-panel min-h-0 flex-1 overflow-hidden border-b border-gold-lo/30 px-5 pb-3 pt-[4.5rem] sm:px-10 sm:pb-5 sm:pt-24 lg:px-[6vw] lg:py-[7vh]">
       <div className="mx-auto grid h-full max-w-7xl content-center gap-3 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:gap-[8vw]">
         <div className="text-center lg:text-left">
-          <p className="font-utility text-[0.62rem] uppercase tracking-[0.22em] text-copper">05 / {contactCopy.eyebrow}</p>
+          <p className="font-utility text-[0.62rem] uppercase tracking-[0.22em] text-copper">{contactCopy.eyebrow}</p>
           <h2 id="contact-heading" className="mt-1 font-display text-[3.5rem] font-normal leading-[0.82] tracking-[-0.05em] text-cream sm:text-7xl lg:text-[clamp(5rem,10vw,9rem)]">{heading}</h2>
           <p className="mx-auto mt-2 max-w-xl text-xs leading-[1.4] text-muted sm:text-sm lg:mx-0 lg:mt-4 lg:text-base">{contactCopy.introduction}</p>
           <Button size="lg" aria-label={contactCopy.floatingCallButtonAccessibleName} onClick={() => open("contact")} className="mt-3 h-auto rounded-full px-5 py-3 font-utility text-[0.68rem] uppercase tracking-[0.12em] shadow-[0_0_2rem_rgb(176_112_60_/_0.2)] sm:px-7 sm:py-4 lg:mt-6">

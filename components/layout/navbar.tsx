@@ -15,14 +15,14 @@ function NavbarLogo() {
     alt: salon.name,
     width: 500,
     height: 500,
-    sizes: "56px",
+    sizes: "64px",
   }).props;
   const mobileLogo = getImageProps({
     src: "/brand/Navbar Text.png",
     alt: "",
     width: 612,
     height: 408,
-    sizes: "84px",
+    sizes: "96px",
   }).props;
 
   return (
@@ -31,7 +31,7 @@ function NavbarLogo() {
       <img
         {...desktopLogo}
         alt={salon.name}
-        className="h-14 w-[84px] object-contain drop-shadow-[0_1px_8px_rgba(11,10,9,0.9)] md:w-14"
+        className="h-16 w-24 object-contain drop-shadow-[0_1px_8px_rgba(11,10,9,0.9)] md:w-16"
       />
     </picture>
   );

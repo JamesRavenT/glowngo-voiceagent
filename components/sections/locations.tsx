@@ -86,12 +86,12 @@ export function Locations() {
 
       <header className="relative z-10 shrink-0 lg:absolute lg:left-[6vw] lg:top-[20svh] lg:w-[41vw]">
         <p className="font-utility text-[0.58rem] uppercase tracking-[0.2em] text-gold-hi sm:text-[0.65rem]">
-          03 / {heading}
+          {heading}
         </p>
         <h2
           id="locations-heading"
           aria-label={heading}
-          className="mt-0.5 font-display text-[2.15rem] font-normal leading-none tracking-[-0.045em] text-cream sm:text-5xl lg:mt-2 lg:text-[clamp(4.5rem,9.5vw,9rem)] lg:leading-[0.82]"
+          className="mt-0.5 font-display text-[2.15rem] font-normal leading-none tracking-[-0.045em] text-cream sm:text-5xl lg:mt-2 lg:text-[clamp(2.75rem,4.6vw,5rem)] lg:leading-[0.82]"
         >
           Find your light.
         </h2>
@@ -104,7 +104,7 @@ export function Locations() {
             data-branch-id={branch.id}
             className="grid min-h-0 grid-cols-[1.08fr_0.92fr] grid-rows-[auto_auto] content-center gap-x-3 border-t border-gold-lo/70 bg-ink/75 px-3 py-1.5 text-left first:border-t-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:border lg:border-gold-lo/60 lg:bg-ink/80 lg:px-8 lg:py-5 lg:text-center lg:shadow-[0_0_3rem_rgb(138_90_43/0.14)] lg:[border-radius:50%/18%] lg:first:border-t"
           >
-            <h3 className="self-end font-display text-[1.15rem] font-medium leading-none tracking-[-0.03em] text-cream sm:text-2xl lg:text-[clamp(1.6rem,2.2vw,2.25rem)]">
+            <h3 className="self-end font-display text-[1.15rem] font-medium leading-none tracking-[-0.03em] text-cream sm:text-2xl lg:self-auto lg:text-[clamp(1.6rem,2.2vw,2.25rem)]">
               {branch.name}
             </h3>
             <a
