@@ -47,7 +47,7 @@ export function FloatingCallButton() {
   return (
     <button
       type="button"
-      aria-label={contactCopy.floatingCallButton}
+      aria-label={contactCopy.floatingCallButtonAccessibleName}
       data-expanded={isExpanded}
       data-pulse={!prefersReducedMotion}
       onClick={() => open("floating")}
@@ -65,10 +65,10 @@ export function FloatingCallButton() {
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.22, ease: "easeOut" }}
         className="overflow-hidden whitespace-nowrap md:hidden"
       >
-        {contactCopy.floatingCallButton}
+        {contactCopy.floatingCallButtonLabel}
       </motion.span>
       <span aria-hidden="true" className="hidden whitespace-nowrap md:inline">
-        {contactCopy.floatingCallButton}
+        {contactCopy.floatingCallButtonLabel}
       </span>
     </button>
   );

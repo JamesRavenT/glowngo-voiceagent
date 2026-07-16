@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { about, branches, faq, services, stylists } from "./index";
+import { about, branches, faq, serviceCategories, services, stylists, voiceAgent } from "./index";
 
 const expectUniqueIds = (items: readonly { id: string }[]) => {
   expect(new Set(items.map(({ id }) => id)).size).toBe(items.length);
@@ -32,6 +32,17 @@ describe("content invariants", () => {
       expect(Number.isInteger(service.priceCents)).toBe(true);
       expect(service.priceCents).toBeGreaterThan(0);
     }
+  });
+
+  it("assigns every service to the ordered service categories", () => {
+    expect(serviceCategories).toEqual(["Cuts & Styling", "Treatments", "Color Services"]);
+    expect(serviceCategories.map((category) =>
+      services.filter((service) => service.category === category).length,
+    )).toEqual([4, 2, 6]);
+  });
+
+  it("defines the voice receptionist identity", () => {
+    expect(voiceAgent).toMatchObject({ name: "Gigi", pronouns: "she/her" });
   });
 
   it("keeps stylists named in the About copy in the stylist roster", () => {

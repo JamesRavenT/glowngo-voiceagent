@@ -21,6 +21,12 @@ export interface Salon {
   readonly disclaimer: string;
 }
 
+export interface VoiceAgent {
+  readonly name: string;
+  readonly pronouns: "she/her";
+  readonly role: string;
+}
+
 export interface Branch {
   readonly id: string;
   readonly name: string;
@@ -40,6 +46,7 @@ export interface Stylist {
 export interface Service {
   readonly id: string;
   readonly name: string;
+  readonly category: ServiceCategory;
   readonly durationMinutes: number;
   readonly priceCents: number;
   readonly description: string;
@@ -52,3 +59,4 @@ export interface FaqItem {
   readonly answer: string;
   readonly defaultOpen?: boolean;
 }
+import type { ServiceCategory } from "./service-categories";

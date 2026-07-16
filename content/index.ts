@@ -1,10 +1,13 @@
 export { about } from "./about";
+export { voiceAgent } from "./agent";
 export { branches } from "./branches";
 export { callCopy, simulatedCallScript } from "./call";
 export { contactCopy, examplePhrases } from "./contact";
 export { faq } from "./faq";
 export { salon, SALON_TIMEZONE, siteCopy } from "./salon";
+export { serviceCategories } from "./service-categories";
 export { services } from "./services";
 export { locationsCopy, servicesCopy } from "./sections";
 export { stylists } from "./stylists";
-export type { Branch, DayOfWeek, FaqItem, OpeningHours, Salon, Service, Stylist, WeeklyHours } from "./types";
+export type { ServiceCategory } from "./service-categories";
+export type { Branch, DayOfWeek, FaqItem, OpeningHours, Salon, Service, Stylist, VoiceAgent, WeeklyHours } from "./types";

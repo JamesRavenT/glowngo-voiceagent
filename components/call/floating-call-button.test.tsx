@@ -45,27 +45,28 @@ describe("FloatingCallButton", () => {
 
   it('opens the call experience with the "floating" source', () => {
     renderButton();
-    fireEvent.click(screen.getByRole("button", { name: contactCopy.floatingCallButton }));
+    fireEvent.click(screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName }));
     expect(screen.getByText("floating")).toBeInTheDocument();
   });
 
   it("keeps its accessible name when expanded and collapsed", () => {
     renderButton();
-    const button = screen.getByRole("button", { name: contactCopy.floatingCallButton });
+    const button = screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName });
     expect(button).toHaveAttribute("data-expanded", "true");
 
     window.scrollY = 100;
     fireEvent.scroll(window);
 
     expect(button).toHaveAttribute("data-expanded", "false");
-    expect(button).toHaveAccessibleName(contactCopy.floatingCallButton);
+    expect(button).toHaveAccessibleName(contactCopy.floatingCallButtonAccessibleName);
+    expect(button).toHaveTextContent(contactCopy.floatingCallButtonLabel);
     expect(button.querySelector("[data-visible='false']")).toBeInTheDocument();
   });
 
   it("disables the heartbeat pulse when reduced motion is preferred", () => {
     setReducedMotion(true);
     renderButton();
-    const button = screen.getByRole("button", { name: contactCopy.floatingCallButton });
+    const button = screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName });
     expect(button).toHaveAttribute("data-pulse", "false");
     expect(button).not.toHaveClass("floating-call-button--pulse");
   });

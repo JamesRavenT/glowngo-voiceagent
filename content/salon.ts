@@ -4,11 +4,11 @@ export const SALON_TIMEZONE = "America/Los_Angeles";
 
 export const salon = {
   name: "Glow & Go",
-  tagline: "Your chair is waiting.",
-  heroHeadlineLines: ["Your chair", "is waiting."],
+  tagline: "Meet your next look.",
+  heroHeadlineLines: ["Meet your", "next look."],
   timezone: SALON_TIMEZONE,
   disclaimer:
-    "Glow & Go is a demonstration built by James Raven Tabag. No booking is real, and all booking data is synthetic.",
+    "Glow & Go, including its stylists, services, history, and locations, is invented and refers to no real business or person. This is a demonstration built by James Raven Tabag.",
 } as const satisfies Salon;
 
 export const siteCopy = {
@@ -18,6 +18,7 @@ export const siteCopy = {
   skipToContent: "Skip to content",
   navigationLabel: "Primary navigation",
   footerNavigationLabel: "Footer navigation",
+  footerCopyright: "© James Raven Tabag 2026",
   openMenuLabel: "Open navigation menu",
   closeMenuLabel: "Close navigation menu",
   heroEyebrow: "Los Angeles · By appointment",

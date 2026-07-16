@@ -1,3 +1,5 @@
+import { voiceAgent } from "./agent";
+
 export const examplePhrases = [
   "Book me a balayage with Nova next Tuesday at 2.",
   "Who does color correction?",
@@ -9,9 +11,10 @@ export const examplePhrases = [
 
 export const contactCopy = {
   eyebrow: "Ready when you are",
-  introduction: "Talk with the Glow & Go voice agent to ask a question, find an opening, or manage a demo booking.",
-  callButton: "Talk to the voice agent",
-  floatingCallButton: "Call the salon voice agent",
+  introduction: `Talk with ${voiceAgent.name} to ask a question, find an opening, or manage a demo booking. She is the Glow & Go voice receptionist.`,
+  callButton: `Talk to ${voiceAgent.name}`,
+  floatingCallButtonLabel: "Book Now",
+  floatingCallButtonAccessibleName: `Book now — call ${voiceAgent.name}, the Glow & Go voice agent`,
   examplePhrasesHeading: "Try saying",
   quickReferenceHeading: "Service quick reference",
   quickReferenceCaption: "Glow & Go service durations and prices",
