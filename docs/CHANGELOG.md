@@ -15,8 +15,13 @@ Design and structure pass. Plan: [plans/v0.1.1.md](plans/v0.1.1.md).
 - Hero disclaimer covering fictionality and attribution
   ([ADR 0004](decisions/0004-disclaimer-placement.md)).
 - Service categories: Cuts & Styling, Treatments, Color Services.
-- Mobile carousels for Services (3 pages) and Locations (4 pages) via Embla
+- Mobile carousel for Services — 2 pages, via Embla
   ([ADR 0002](decisions/0002-embla-for-carousels.md)).
+- The voice agent is named **Gigi** (she/her). Her name lives in `content/`, so it reaches the
+  generated knowledge base and the live agent introduces itself as Gigi.
+- `docs/design/directions/` — the five whole-page design directions considered at the v0.1.1 gate,
+  kept as a record. **Nocturne Orbit** was chosen.
+- **Cormorant Garamond** as the display face, from the chosen direction.
 
 ### Changed
 - Hero headline: "Your chair is waiting." → "Meet your next look."
@@ -26,7 +31,7 @@ Design and structure pass. Plan: [plans/v0.1.1.md](plans/v0.1.1.md).
 - Call modal is centered in the viewport instead of anchored to the floating button.
 - Navbar uses the `Navbar.png` mark on desktop and the `Navbar Text.png` wordmark on mobile.
 - Services: 3-column layout on desktop.
-- Locations: 2×2 grid on desktop; weekly hours shown as grouped ranges.
+- Locations: 2×2 grid on desktop; single-column list on mobile; weekly hours as grouped ranges.
 - Footer reduced to a single copyright line.
 - Visual direction sharpened — Tron geometry and light in brand copper
   ([ADR 0003](decisions/0003-tron-geometry-in-brand-copper.md)).

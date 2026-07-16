@@ -1,13 +1,24 @@
 # Design
 
-## Direction
+## Direction — Nocturne Orbit
 
 **Modernized aesthetic salon** — editorial and warm, with Tron's geometry and light discipline but
-none of its flash. Hard edges, controlled glow, backlit volumetrics, generous negative space. It
-should read as a fashion house that happens to be lit by a machine, not as a sci-fi film.
+none of its flash. It should read as a fashion house that happens to be lit by a machine, not as a
+sci-fi film.
 
-Restraint is the point. See [ADR 0003](decisions/0003-tron-geometry-in-brand-copper.md) for why the
-palette stays copper and never becomes cyan.
+Chosen from five whole-page directions in
+[`design/directions/`](design/directions/index.html), which remain in the repo as the record of what
+was considered. **Nocturne Orbit** commits to circular composition, orbiting copy, full-bleed image
+texture, and soft volumetric washes. It gives up hard-grid clarity for atmosphere.
+
+| | |
+|---|---|
+| Display | **Cormorant Garamond** (added — one serif family at three weights) |
+| Body | Inter Tight |
+| Mono | JetBrains Mono |
+
+Restraint is still the point. See [ADR 0003](decisions/0003-tron-geometry-in-brand-copper.md) for why
+the palette stays copper and never becomes cyan.
 
 ## Palette
 
@@ -61,8 +72,8 @@ the Footer share a single screen.
 
 | Section | Desktop | Mobile |
 |---|---|---|
-| Services | 3 columns — Cuts & Styling, Treatments, Color Services | 3-page carousel |
-| Locations | 2×2 grid | 4-page carousel |
+| Services | 3 columns — Cuts & Styling, Treatments, Color Services | 2-page carousel: (Cuts & Styling + Treatments), then (Color Services) |
+| Locations | 2×2 grid | Single-column list of all four branches — **not** a carousel |
 
 Full-height panels are a hard content budget. Weekly hours are shown as grouped ranges rather than
 seven rows, and services show name/duration/price without descriptions. Both still reach the agent in
@@ -71,6 +82,21 @@ full through the knowledge base — the site just stops shouting them.
 **Floating call button:** desktop bottom-right, labeled. Mobile bottom-right, icon-only ~56px, above
 `env(safe-area-inset-bottom)`; collapses on scroll-down, re-expands on scroll-up. No full-width
 bottom bar — it fights browser chrome and reads as an ad.
+
+## Gigi
+
+The voice agent is named **Gigi**. Pronouns: **she/her**.
+
+The name lives in `content/` and therefore reaches the generated knowledge base, so the live agent
+introduces itself as Gigi too — the site and the voice do not disagree. See
+[architecture.md](architecture.md#content-is-the-single-source-of-truth).
+
+Copy treats her as a named receptionist, not a mascot: "Talk to Gigi. She checks real availability."
+Not "the voice agent", not a product feature.
+
+**Her name does not replace the description in accessible names.** The floating button announces
+"Book now — call Gigi, the Glow & Go voice agent". A screen-reader user who has never seen the site
+does not know who Gigi is, and still needs to be told a microphone is about to open.
 
 ## The call modal
 

@@ -1,6 +1,19 @@
 # 0002 — Embla for the mobile carousels
 
-**Status:** Accepted (v0.1.1) · **Date:** 2026-07-16
+**Status:** Accepted (v0.1.1), amended 2026-07-16 — scope reduced to one carousel · **Date:** 2026-07-16
+
+## Amendment
+
+This ADR originally covered two carousels. After the design gate, James chose Nocturne Orbit and
+asked for mobile Locations to be a **plain single-column list**, not a carousel, and mobile Services
+to be **2 pages** rather than 3.
+
+So exactly **one** carousel remains: Services, two slides. The decision stands, but honestly, it got
+closer. One 2-slide carousel is thin justification for a dependency, and if this were the original
+brief the CSS option would deserve another look. It stands because the reason below is architectural
+rather than about page count — a nested scroll container would fight GSAP's vertical snap no matter
+how many slides it has — and because shadcn's wrapper still gets us accessibility we would otherwise
+hand-roll. Worth revisiting if Services ever stops being a carousel too.
 
 ## Context
 
