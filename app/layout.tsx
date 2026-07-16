@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Familjen_Grotesk, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Cormorant_Garamond, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/navbar";
 import { CallProvider } from "@/components/call/call-provider";
 import { FloatingCallButton } from "@/components/call/floating-call-button";
@@ -7,9 +7,10 @@ import { CallSessionSelector } from "@/components/call/call-session-selector";
 import { siteCopy } from "@/content/salon";
 import "@/app/globals.css";
 
-const familjenGrotesk = Familjen_Grotesk({
-  variable: "--font-familjen-grotesk",
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant-garamond",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 const interTight = Inter_Tight({
@@ -35,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${familjenGrotesk.variable} ${interTight.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${cormorantGaramond.variable} ${interTight.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <CallProvider>

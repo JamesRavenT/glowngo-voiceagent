@@ -26,7 +26,7 @@
   --color-border: #8a5a2b;
   --color-input: #8a5a2b;
   --color-ring: #e8c88a;
-  --font-display: var(--font-familjen-grotesk);
+  --font-display: var(--font-cormorant-garamond);
   --font-body: var(--font-inter-tight);
   --font-utility: var(--font-jetbrains-mono);
   --font-sans: var(--font-inter-tight);
@@ -81,6 +81,40 @@
     animation: floating-call-heartbeat 3s ease-out infinite;
   }
 
+  .nocturne-panel {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(ellipse at 78% 50%, rgb(138 90 43 / 0.16), transparent 38%),
+      var(--color-ink);
+  }
+
+  .nocturne-panel::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: min(42rem, 48vw);
+    height: 72%;
+    right: -12vw;
+    top: 14%;
+    border: 1px solid rgb(176 112 60 / 0.28);
+    border-radius: 50%;
+    box-shadow: 0 0 4rem rgb(138 90 43 / 0.1);
+    pointer-events: none;
+  }
+
+  .about-orbit {
+    border: 1px solid rgb(176 112 60 / 0.4);
+    border-radius: 50%;
+    box-shadow: 0 0 4rem rgb(138 90 43 / 0.1);
+  }
+
+  .faq-orbit {
+    border: 1px solid rgb(176 112 60 / 0.34);
+    border-radius: 50%;
+    box-shadow: 0 0 4rem rgb(138 90 43 / 0.08);
+  }
+
   .call-dialog {
     position: fixed;
     inset: 0;
@@ -127,5 +161,19 @@
 
   @media (min-width: 48rem) {
     .call-dialog__panel { padding: 1.5rem; }
+  }
+
+  @media (max-width: 40rem) {
+    .nocturne-panel::before {
+      width: 90vw;
+      right: -52vw;
+    }
+
+    .about-orbit,
+    .faq-orbit {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
   }
 }
