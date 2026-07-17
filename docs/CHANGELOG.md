@@ -29,11 +29,19 @@ Retargeted deployment from Vercel to Cloudflare Workers. No application code cha
 - `preview`, `deploy`, and `cf-typegen` scripts. `build`, `dev`, `start`, and `test:e2e` are
   untouched — local development is unchanged (`pnpm dev` still serves `localhost:3000`).
 
-### Known issues
-- **`opennextjs-cloudflare preview` returns 500 on Windows** for every route reaching the Next
-  server. Local development, the build, and the full test suite are unaffected; what is lost is the
-  local Workers-runtime fidelity check. Cause unproven and production impact undetermined — ADR-0005
-  records what was ruled out.
+### Fixed
+- **`build` now runs `next build --webpack`.** Next.js 16 builds with Turbopack by default, and
+  `@opennextjs/cloudflare` 1.20.1 cannot resolve Turbopack's server chunks — every route reaching the
+  Next server returned HTTP 500 with `ChunkLoadError`, in local preview *and* on deployed Cloudflare
+  infrastructure. 1.20.1 is the latest published adapter, so upgrading was not an option.
+  `test:e2e` now runs `pnpm build` rather than a bare `next build`, so the tested artifact cannot
+  drift from the shipped one. `dev` stays on Turbopack for fast HMR. Do not remove the flag —
+  ADR-0005.
+
+### Verified in production
+Deployed to `glowngo-voiceagent.jraven-tabag.workers.dev`: homepage 200 with the disclaimer and
+services prerendered into the HTML, `check-availability` returning real slots, an unknown booking
+reference correctly refused with 404, the 404 page correct, and the hero served as 49KB of WebP.
 
 ## [0.1.2] — 2026-07-17
 

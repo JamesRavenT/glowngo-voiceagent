@@ -99,34 +99,56 @@ dependencies. Low risk here — small app, committed lockfile.
 and `eslint.config.mjs` overrides `eslint-config-next`'s defaults with an explicit list. Without
 `.open-next/**` there, `pnpm lint` lints the generated bundle and reports ~9,400 problems.
 
-## Open issue: `opennextjs-cloudflare preview` returns 500 on Windows
+## The build must use webpack, not Turbopack — `next build --webpack`
 
-**Unresolved as of 2026-07-17. Not yet known whether production is affected.**
+**RESOLVED 2026-07-17.** Do not remove the `--webpack` flag from the `build` script.
 
-On Windows, every request that reaches the Next server under
-`opennextjs-cloudflare preview` returns HTTP 500 — the homepage, all four API routes, and the 404
-page alike. Only paths that bypass the Next server work: static assets via `ASSETS`, and
-`/_next/image`, which the worker intercepts first (and which is verified working — 1.9MB PNG in,
-59KB WebP out).
+Next.js 16 uses **Turbopack** for `next build` by default. `@opennextjs/cloudflare` 1.20.1 cannot
+resolve Turbopack's server chunks, so **every request reaching the Next server returns HTTP 500**:
 
-wrangler runs with `proxyLogsToController: false`, so the worker's own `console.error` never reaches
-the terminal and the exception has not been captured. Ruled out by testing, not assumption:
+```
+ChunkLoadError: Failed to load chunk server/chunks/ssr/[root-of-the-server]__1w0havz._.js
+                from runtime for chunk server/app/page.js
+```
+
+`[root-of-the-server]` is Turbopack's chunk naming. OpenNext's troubleshooting page confirms it:
+*"...indicates that you are using an older version of the OpenNext adapter with Turbopack builds.
+Upgrade to the latest version for Turbopack support or use Webpack builds."* 1.20.1 **is** the latest
+published version, so upgrading was not an option. Hence `next build --webpack`.
+
+`test:e2e` runs `pnpm build`, not a bare `next build`, so the tested artifact can never drift from
+the shipped one. `dev` deliberately stays on Turbopack for fast HMR — the split Next's own v16
+upgrade guide recommends.
+
+The flag does reach the deployed artifact: `opennextjs-cloudflare build` calls `buildNextjsApp`,
+which resolves to `${packager} build` (`node_modules/@opennextjs/aws/dist/build/buildNextApp.js`) —
+i.e. our `build` script.
+
+### How this was diagnosed, and the wrong turn worth remembering
+
+The symptom looked platform-specific and **was misdiagnosed as a Windows problem for some time.**
+The adapter prints *"OpenNext is not fully compatible with Windows"* on every preview run, which is
+a compelling red herring. It had nothing to do with it — the identical failure reproduced on
+deployed Cloudflare infrastructure, on Linux.
+
+These were ruled out by testing before the real cause surfaced. None were the issue:
 
 | Hypothesis | Outcome |
 |---|---|
-| Stale `compatibility_date` (was 2025-03-25) | Bumped to 2026-07-17 — still 500. Bump kept; it matches Cloudflare's guidance |
-| `global_fetch_strictly_public` breaking self-fetch | Removed — still 500. Restored |
-| Incomplete traced file copy (swallowed at debug level in `copyTracedFiles`) | Complete: 1070 files, `next`/`react`/`react-dom` all present |
+| Stale `compatibility_date` (was 2025-03-25) | Still 500. Bump to 2026-07-17 kept anyway — it matches Cloudflare's "set to today's date" guidance |
+| `global_fetch_strictly_public` breaking self-fetch | Still 500. Restored |
+| Incomplete traced file copy (swallowed at debug level in `copyTracedFiles`) | Complete: 1070 files |
 | Windows `MAX_PATH` truncation | Longest path 142 chars |
 | Windows path separators in the bundle | None |
 
-What remains is the adapter's own warning, printed on every preview run: *"OpenNext is not fully
-compatible with Windows... could encounter unpredictable failures during runtime."* Plausible, but
-**unproven** — do not record it as the cause until something demonstrates it.
+**What actually found it was `wrangler tail` against the deployed Worker** — 30 seconds, versus an
+hour of local guessing. Local `wrangler dev` runs with `proxyLogsToController: false`, so the
+worker's own `console.error` never reaches the terminal; the exception is invisible. **If a Worker
+misbehaves and local preview won't say why, deploy it and tail it.** That is the lesson.
 
-**This does not affect local development.** `next dev`, `next build`, `next start`, vitest, and the
-Playwright suite are all unaffected and pass; Playwright drives `next start`, not workerd. The
-adapter is a deploy-time transform. What is lost is the local Workers-runtime fidelity check.
+The generalisable point: a vendor warning that matches your platform is not evidence. It anchored
+the investigation on the wrong variable while the real cause — a bundler default in a major version
+bump — sat in a log we hadn't read yet.
 
 Cloudflare builds on Linux, so production may well be fine. Deciding that needs a deployed smoke
 test or a WSL build — neither has been run yet.

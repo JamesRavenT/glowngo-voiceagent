@@ -125,10 +125,19 @@ Shipped: **v0.1.3** — Cloudflare Workers deploy target (`docs/plans/v0.1.3.md`
 structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
 `docs/CHANGELOG.md` for what changed.
 
-**Build gotchas that look like cruft — do not "clean up":** `.npmrc` pins `node-linker=hoisted`
-(without it the adapter build fails on Windows with `EPERM` on symlink), and `eslint.config.mjs`
-must ignore `.open-next/**`. `NEXT_PUBLIC_*` are inlined at build time, so on Cloudflare they go in
-**build** variables, never Wrangler `vars`. ADR-0005 has the reasoning.
+**Build gotchas that look like cruft — do not "clean up". All three are load-bearing:**
 
-**Known issue:** `opennextjs-cloudflare preview` 500s on Windows. `pnpm dev`, `pnpm build`, and the
-test suites are unaffected — local development is normal.
+- **`build` is `next build --webpack`.** Next 16 defaults to Turbopack; the Cloudflare adapter cannot
+  resolve Turbopack's server chunks and every route 500s with `ChunkLoadError`. `test:e2e` runs
+  `pnpm build` so the tested artifact matches production. `dev` stays on Turbopack.
+- **`.npmrc` pins `node-linker=hoisted`** — without it the adapter build fails on Windows with
+  `EPERM` on symlink.
+- **`eslint.config.mjs` must ignore `.open-next/**`** — the explicit `globalIgnores` overrides
+  eslint-config-next's defaults.
+
+`NEXT_PUBLIC_*` are inlined at build time, so on Cloudflare they go in **build** variables, never
+Wrangler `vars`. ADR-0005 has the reasoning for all of it.
+
+**Debugging a Worker:** local `wrangler dev` hides the worker's `console.error`
+(`proxyLogsToController: false`). If preview fails and won't say why, deploy and
+`wrangler tail` — that found the Turbopack bug in 30 seconds after an hour of local guessing.
