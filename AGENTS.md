@@ -47,7 +47,7 @@ release — **only when Claude instructs**.
 | Agent UI | ElevenLabs UI (shadcn-native): `orb`, `live-waveform`, `transcript-viewer` |
 | Automation | n8n (Webhook + Google Sheets nodes) |
 | Data | Google Sheets |
-| Deploy | Vercel (site), n8n on VPS via Docker, ElevenLabs-hosted agent |
+| Deploy | Cloudflare Workers via `@opennextjs/cloudflare` (site), n8n on VPS via Docker, ElevenLabs-hosted agent |
 
 ## Architecture — read before implementing
 

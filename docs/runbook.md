@@ -35,9 +35,18 @@ a dead Call button. (`lib/env.ts`, tested.)
 cp .env.example .env.local
 ```
 
-**On Vercel** — Project → Settings → Environment Variables. Add all three to Production (and
-Preview if you want previews live). **`NEXT_PUBLIC_*` vars are inlined at build time**, so after
-changing them you must **redeploy** — restarting won't pick them up. This trips people up.
+**On Cloudflare** — Workers & Pages → your Worker → Settings → **Build** → Variables and Secrets.
+
+**Put them in _build_ variables. Not Wrangler `vars`. This is the trap.**
+
+`NEXT_PUBLIC_*` values are inlined into the bundle at **build** time. Wrangler `vars` are injected at
+**runtime**, into `env` — which the browser bundle never reads. Set the agent ID as a Wrangler var
+and it is simply absent when the build runs; `lib/env.ts` resolves to `simulated`; the site ships
+behind the badge. There is **no error in any log**, and `wrangler.jsonc` looks perfectly correct.
+Expect to lose an hour if you get this wrong.
+
+After changing a build variable you must **redeploy** — a restart won't do it, because the value is
+baked into the JavaScript.
 
 **Never** put Google service-account JSON or n8n API keys in this project. They belong in n8n.
 
@@ -249,7 +258,8 @@ reviewer will poke at.
 
 | | |
 |---|---|
-| Vercel | Free tier is fine |
+| Cloudflare Workers | Free tier is fine |
+| Cloudflare Images | Free-tier transformation allowance is far above portfolio traffic |
 | Google Sheets | Free |
 | VPS for n8n | ~$5/mo |
 | n8n | Free self-hosted |

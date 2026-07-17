@@ -15,8 +15,9 @@ ElevenLabs **hosts** the agent and calls n8n directly, server to server. The fou
 **webhook tools**, not client tools.
 
 The consequence is a large simplification: in live mode the Next.js app has **no booking backend and
-holds no booking secrets**. It renders the call UI and nothing else. Vercel serves a static-ish site;
-the credentials live in n8n.
+holds no booking secrets**. It renders the call UI and nothing else. Cloudflare Workers serves a
+static-ish site via `@opennextjs/cloudflare`; the credentials live in n8n. See
+[ADR-0005](decisions/0005-cloudflare-workers-via-opennext.md).
 
 ## The mock layer
 

@@ -98,3 +98,35 @@ dependencies. Low risk here — small app, committed lockfile.
 **Also: eslint needs its own ignore.** `.gitignore` excluding `.open-next/` does nothing for eslint,
 and `eslint.config.mjs` overrides `eslint-config-next`'s defaults with an explicit list. Without
 `.open-next/**` there, `pnpm lint` lints the generated bundle and reports ~9,400 problems.
+
+## Open issue: `opennextjs-cloudflare preview` returns 500 on Windows
+
+**Unresolved as of 2026-07-17. Not yet known whether production is affected.**
+
+On Windows, every request that reaches the Next server under
+`opennextjs-cloudflare preview` returns HTTP 500 — the homepage, all four API routes, and the 404
+page alike. Only paths that bypass the Next server work: static assets via `ASSETS`, and
+`/_next/image`, which the worker intercepts first (and which is verified working — 1.9MB PNG in,
+59KB WebP out).
+
+wrangler runs with `proxyLogsToController: false`, so the worker's own `console.error` never reaches
+the terminal and the exception has not been captured. Ruled out by testing, not assumption:
+
+| Hypothesis | Outcome |
+|---|---|
+| Stale `compatibility_date` (was 2025-03-25) | Bumped to 2026-07-17 — still 500. Bump kept; it matches Cloudflare's guidance |
+| `global_fetch_strictly_public` breaking self-fetch | Removed — still 500. Restored |
+| Incomplete traced file copy (swallowed at debug level in `copyTracedFiles`) | Complete: 1070 files, `next`/`react`/`react-dom` all present |
+| Windows `MAX_PATH` truncation | Longest path 142 chars |
+| Windows path separators in the bundle | None |
+
+What remains is the adapter's own warning, printed on every preview run: *"OpenNext is not fully
+compatible with Windows... could encounter unpredictable failures during runtime."* Plausible, but
+**unproven** — do not record it as the cause until something demonstrates it.
+
+**This does not affect local development.** `next dev`, `next build`, `next start`, vitest, and the
+Playwright suite are all unaffected and pass; Playwright drives `next start`, not workerd. The
+adapter is a deploy-time transform. What is lost is the local Workers-runtime fidelity check.
+
+Cloudflare builds on Linux, so production may well be fine. Deciding that needs a deployed smoke
+test or a WSL build — neither has been run yet.

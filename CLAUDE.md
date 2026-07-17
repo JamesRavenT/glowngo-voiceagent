@@ -43,7 +43,7 @@ genuinely apply.
 | Agent UI | ElevenLabs UI (shadcn-native): `orb`, `live-waveform`, `transcript-viewer` |
 | Automation | n8n (Webhook + Google Sheets nodes) |
 | Data | Google Sheets |
-| Deploy | Vercel (site), n8n on VPS via Docker, ElevenLabs-hosted agent |
+| Deploy | Cloudflare Workers via `@opennextjs/cloudflare` (site), n8n on VPS via Docker, ElevenLabs-hosted agent |
 
 ## Architecture — read before planning
 
@@ -110,7 +110,7 @@ belong there — never in a path outside the repository.
 
 | Where | What |
 |---|---|
-| `docs/plans/` | Implementation plan per release. Current: `docs/plans/v0.1.1.md`. |
+| `docs/plans/` | Implementation plan per release. Current: `docs/plans/v0.1.3.md`. |
 | `docs/decisions/` | ADRs. Write one when a decision has reasoning worth keeping. |
 | `docs/CHANGELOG.md` | Update as part of the release chunk, not after. |
 | `docs/architecture.md`, `design.md`, `requirements.md` | Human-facing reference. |
@@ -120,6 +120,15 @@ reliably follow links — keep both in sync when architecture changes.
 
 ## Chunk status
 
-Shipped: **v0.1.2** — review fixes (snap, mobile menu, services, FAQ, animations), **v0.1.1** —
-design and structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
+Shipped: **v0.1.3** — Cloudflare Workers deploy target (`docs/plans/v0.1.3.md`, ADR-0005),
+**v0.1.2** — review fixes (snap, mobile menu, services, FAQ, animations), **v0.1.1** — design and
+structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
 `docs/CHANGELOG.md` for what changed.
+
+**Build gotchas that look like cruft — do not "clean up":** `.npmrc` pins `node-linker=hoisted`
+(without it the adapter build fails on Windows with `EPERM` on symlink), and `eslint.config.mjs`
+must ignore `.open-next/**`. `NEXT_PUBLIC_*` are inlined at build time, so on Cloudflare they go in
+**build** variables, never Wrangler `vars`. ADR-0005 has the reasoning.
+
+**Known issue:** `opennextjs-cloudflare preview` 500s on Windows. `pnpm dev`, `pnpm build`, and the
+test suites are unaffected — local development is normal.

@@ -3,6 +3,38 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] — 2026-07-17
+
+Retargeted deployment from Vercel to Cloudflare Workers. No application code changed —
+`app/`, `components/`, and `content/` are untouched. See
+[ADR-0005](decisions/0005-cloudflare-workers-via-opennext.md) and [plans/v0.1.3.md](plans/v0.1.3.md).
+
+### Changed
+- **Deploy target is Cloudflare Workers** via `@opennextjs/cloudflare` 1.20.1 (+ `wrangler` 4.112.0).
+  Static export was rejected: Next.js static export supports only `GET` route handlers, and all four
+  mock routes are `POST` — it would have broken the n8n contract spec and the `test:e2e` suite.
+  `@cloudflare/next-on-pages` was rejected: it requires the Edge runtime.
+- `.npmrc` pins `node-linker=hoisted`. **Required for the adapter build on Windows** — the adapter
+  recreates a symlink per traced file under pnpm's default linker, which Windows refuses without
+  Developer Mode (`EPERM`). Do not remove it as tidy-up; see ADR-0005.
+- `eslint.config.mjs` ignores `.open-next/**` and `.wrangler/**`. The explicit `globalIgnores`
+  overrides `eslint-config-next`'s defaults, so the generated bundle was being linted (9,431
+  problems).
+- Stale Vercel references removed from docs, `.gitignore`, and the `lib/booking/store.ts` comment.
+
+### Added
+- Image optimization through the Cloudflare `IMAGES` binding — Workers has no `sharp`. Verified on
+  workerd: the hero drops from 1,938,257 bytes of PNG to 59,390 bytes of WebP, a 97% reduction.
+  `next/image` call sites are unchanged.
+- `preview`, `deploy`, and `cf-typegen` scripts. `build`, `dev`, `start`, and `test:e2e` are
+  untouched — local development is unchanged (`pnpm dev` still serves `localhost:3000`).
+
+### Known issues
+- **`opennextjs-cloudflare preview` returns 500 on Windows** for every route reaching the Next
+  server. Local development, the build, and the full test suite are unaffected; what is lost is the
+  local Workers-runtime fidelity check. Cause unproven and production impact undetermined — ADR-0005
+  records what was ruled out.
+
 ## [0.1.2] — 2026-07-17
 
 Bug fixes and interaction changes from James's review.

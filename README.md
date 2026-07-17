@@ -56,7 +56,7 @@ walkthrough — including the n8n Docker setup and the security gap to close fir
 
    Live mode requires both `NEXT_PUBLIC_AGENT_MODE=live` and a non-empty agent ID. Any other combination falls back to simulated mode, so a missing ID cannot ship a dead Call button. The sheet URL powers the site's public synthetic-bookings link.
 
-5. **Deploy.** Deploy the Next.js site to Vercel with those environment variables. Keep n8n on its own public host; it receives the ElevenLabs webhooks and writes to Sheets.
+5. **Deploy.** Deploy the site to Cloudflare Workers — `pnpm run deploy`, or connect the repo to Workers Builds for CI. Set the three variables above as **build** variables, not Wrangler `vars`: `NEXT_PUBLIC_*` is inlined at build time, so runtime vars silently do nothing. Keep n8n on its own public host; it receives the ElevenLabs webhooks and writes to Sheets.
 
 ## Scripts
 
