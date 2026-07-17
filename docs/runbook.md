@@ -3,11 +3,55 @@
 Operational runbook. `README.md` explains *what* to wire; this explains *how*, with the Docker
 specifics, the exact env placement, and the decisions you'll hit.
 
-**Where you are:** v0.1.0 is complete and deployable right now. It runs in simulated mode with zero
+**Where you are:** the site is **deployed and live**, running in simulated mode with zero
 configuration — nothing below is required to ship it as a portfolio piece. This is only for making
 the agent real.
 
+| | |
+|---|---|
+| Live | <https://glowngo-voiceagentdemo.site> |
+| Fallback | <https://glowngo-voiceagent.jraven-tabag.workers.dev> |
+| Deploy | `pnpm run deploy` |
+| Registrar | Vercel · **DNS: Cloudflare** |
+
 **Time:** roughly 1–2 hours, mostly waiting on DNS and Google's consent screens.
+
+---
+
+## 0. The deployment, and what it took
+
+Recorded because none of it is guessable, and all of it will bite again.
+
+**Workers requires Cloudflare nameservers.** *"Unlike Pages, Workers does not support any domain
+whose nameservers are not managed by Cloudflare."* There is no CNAME workaround. Vercel stays the
+registrar; only the nameservers moved.
+
+**Cloudflare's onboarding scan imports the old host's DNS records, and they block the Custom
+Domain.** Attaching failed with `Conflict 409` until the apex records were deleted. The addresses
+are not the ones you would search for — **Vercel has moved off `76.76.21.21`**:
+
+| Records Vercel left | |
+|---|---|
+| `A` apex + `A *` wildcard | `216.198.79.1`, `216.198.79.65` |
+| `A www` | `64.29.17.1`, `64.29.17.65` |
+| `CNAME _domainconnect` | `_domainconnect.vercel-dns.com` — the giveaway |
+
+All were deleted. **The three `CAA` records were deliberately kept** (`letsencrypt.org`, `pki.goog`,
+`sectigo.com`) — Cloudflare issues the certificate through those authorities, so removing them
+blocks the cert. Cloudflare then created `AAAA @ -> 100::` (proxied, originless) itself.
+
+**A symptom guide**, since these are indistinguishable from the outside:
+
+| Symptom | Meaning |
+|---|---|
+| `525` on the apex | A proxied record points at a dead origin — the old host's record is still there |
+| `Conflict 409` on deploy | Same cause: a record already occupies the hostname |
+| `404` on `workers.dev` | `workers_dev` defaulted off because a route exists — pin `workers_dev: true` |
+
+**`www` is not covered by the apex.** Custom Domains match the hostname exactly. `www` needs a
+**proxied** `A` record to `192.0.2.0` (a reserved placeholder — proxied, so requests never reach it)
+plus a Redirect Rule to the root. Both are dashboard tasks; neither is expressible in
+`wrangler.jsonc`.
 
 ---
 

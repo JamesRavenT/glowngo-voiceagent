@@ -38,10 +38,23 @@ Retargeted deployment from Vercel to Cloudflare Workers. No application code cha
   drift from the shipped one. `dev` stays on Turbopack for fast HMR. Do not remove the flag —
   ADR-0005.
 
-### Verified in production
-Deployed to `glowngo-voiceagent.jraven-tabag.workers.dev`: homepage 200 with the disclaimer and
-services prerendered into the HTML, `check-availability` returning real slots, an unknown booking
-reference correctly refused with 404, the 404 page correct, and the hero served as 49KB of WebP.
+### Deployed
+- **Live at <https://glowngo-voiceagentdemo.site>**, with
+  <https://glowngo-voiceagent.jraven-tabag.workers.dev> as a fallback. Registrar stays Vercel;
+  nameservers moved to Cloudflare, because Workers cannot serve a domain whose nameservers it does
+  not manage.
+- `www` redirects to the root (301, path and query preserved) via a Redirect Rule plus a proxied
+  placeholder record.
+- `wrangler.jsonc` pins `workers_dev: true` and `preview_urls: true` — both default off once a route
+  exists, which silently 404'd the fallback URL.
+
+Verified in production: homepage 200 with a valid certificate and the disclaimer plus services
+prerendered into the HTML, `check-availability` returning real slots, an unknown booking reference
+correctly refused with 404, and the hero served as 49KB of WebP (from 1.9MB).
+
+Runbook §0 records the DNS specifics — notably that Cloudflare's onboarding scan imports the old
+host's records and blocks the Custom Domain with `Conflict 409`, and that Vercel's current IPs are
+`216.198.79.x` / `64.29.17.x`, not the `76.76.21.21` everyone looks for.
 
 ## [0.1.2] — 2026-07-17
 
