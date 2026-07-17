@@ -1,5 +1,5 @@
 // This module-level store is a reference implementation only. It is not durable across
-// Vercel serverless instances; live bookings are persisted in Google Sheets through n8n.
+// Cloudflare Workers isolates; live bookings are persisted in Google Sheets through n8n.
 import { generateReferenceCode, normalizeReferenceCode } from "@/lib/booking/reference-code";
 import type { Booking } from "@/lib/booking/types";
 

@@ -71,3 +71,30 @@ costs LCP on the hero). See `docs/plans/v0.1.3.md`.
 
 **Local dev is unchanged.** The adapter is a deploy-time transform; `next dev` keeps HMR. Previewing
 on the real Workers runtime is a separate, slower `opennextjs-cloudflare preview` step.
+
+**`.npmrc` pins `node-linker=hoisted`, and the build breaks on Windows without it.** Do not remove
+that line as tidy-up.
+
+The adapter's `copyTracedFiles` step mirrors the traced dependency tree, and recreates a symlink
+whenever the source is itself a symlink:
+
+```js
+try { symlink = readlinkSync(from); } catch (e) { /* Ignore */ }
+if (symlink) { symlinkSync(symlink, to); } else { copyFileAndMakeOwnerWritable(from, to); }
+```
+
+Under pnpm's default linker every package in `node_modules` is a symlink into `.pnpm/`, so this
+takes the symlink branch for every file. Windows refuses symlink creation without Developer Mode or
+an elevated shell, and the build dies with `EPERM: operation not permitted, symlink`. A hoisted
+layout makes the sources real files, `readlinkSync` throws, and the adapter copies instead.
+
+The alternative was enabling Windows Developer Mode — rejected as a permanent machine-wide change
+imposed on anyone who clones the repo. Hoisting is committed, so it fixes the build for every
+contributor and keeps local builds identical to Cloudflare's Linux CI.
+
+Trade-off accepted: a flat `node_modules` no longer catches imports of undeclared transitive
+dependencies. Low risk here — small app, committed lockfile.
+
+**Also: eslint needs its own ignore.** `.gitignore` excluding `.open-next/` does nothing for eslint,
+and `eslint.config.mjs` overrides `eslint-config-next`'s defaults with an explicit list. Without
+`.open-next/**` there, `pnpm lint` lints the generated bundle and reports ~9,400 problems.
