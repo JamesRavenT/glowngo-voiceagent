@@ -10,6 +10,7 @@ New to the project? Read [requirements](requirements.md) → [architecture](arch
 | [requirements.md](requirements.md) | What this is, what it must do, what's locked, what stack it uses. |
 | [architecture.md](architecture.md) | How the pieces fit and why the browser isn't in the booking path. |
 | [design.md](design.md) | Brand, tokens, motion, layout rules. |
+| [setup-checklist.md](setup-checklist.md) | Short path: what to create and what goes in `.env.local` to test the agent. |
 | [runbook.md](runbook.md) | Operational guide for taking the demo live (keys, n8n, Sheets). |
 | [CHANGELOG.md](CHANGELOG.md) | What changed in each release. |
 | [plans/](plans/) | Implementation plan per release. |
