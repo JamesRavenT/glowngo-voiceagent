@@ -122,9 +122,46 @@ You need n8n reachable at a **public HTTPS URL**, because ElevenLabs' servers ca
 `localhost` and self-signed certs will not work.
 
 ### Requirements
-- A VPS (Hetzner/DigitalOcean/etc. — the smallest tier is plenty)
+- A VPS — any provider. Below is the **Oracle Cloud Free Tier** path actually used here.
 - A domain or subdomain pointed at its IP, e.g. `n8n.yourdomain.com`
 - Docker + Docker Compose
+
+### Oracle Cloud Free Tier — the parts that will bite
+
+Three traps, none guessable from the outside:
+
+1. **Two firewalls, not one.** Oracle has a cloud-level firewall (VCN Security List / NSG) **and**
+   the Ubuntu image ships with restrictive `iptables` rules that `REJECT` almost everything. Opening
+   80/443 in the console is *not enough* — you must open them in the instance too, or Traefik never
+   sees traffic and the Let's Encrypt cert silently never issues.
+2. **Ampere capacity.** The good shape (`VM.Standard.A1.Flex`, ARM64 — 1 OCPU / 6 GB is ample) is
+   often "out of capacity" in busy regions. Retry, change home region, or fall back to the
+   always-available `VM.Standard.E2.1.Micro` (1 GB x86 — tight but works).
+3. **Cloudflare proxy breaks the cert.** The n8n subdomain must be **DNS only (grey cloud)**. Traefik
+   gets its cert via a TLS challenge on port 443; a proxied (orange-cloud) record intercepts 443 and
+   the challenge never reaches Traefik — issuance hangs forever.
+
+Steps:
+
+1. **Instance** — Ubuntu 24.04, shape `VM.Standard.A1.Flex` (ARM64, 1 OCPU / 6 GB). Upload your SSH
+   public key; you log in as `ubuntu`.
+2. **Reserve the public IP** — VNIC → the public IP → edit → **reserved**. Ephemeral IPs can change
+   on stop/start and break DNS.
+3. **Cloud firewall** — VCN → subnet → Security List → add ingress: source `0.0.0.0/0`, TCP, ports
+   **80** and **443** (22 is already open).
+4. **Instance firewall** (the trap) — SSH in and run:
+   ```bash
+   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+   sudo netfilter-persistent save   # without this the rules vanish on reboot
+   ```
+5. **DNS** (Cloudflare) — add an `A` record: name `n8n`, value = the reserved IP,
+   **proxy status DNS only**.
+6. **Docker** —
+   ```bash
+   curl -fsSL https://get.docker.com | sudo sh
+   sudo usermod -aG docker ubuntu   # then log out and back in
+   ```
 
 ### `compose.yaml`
 
@@ -170,6 +207,7 @@ services:
       - NODE_ENV=production
       - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
       - N8N_PROXY_HOPS=1
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       - GENERIC_TIMEZONE=America/Los_Angeles
       - TZ=America/Los_Angeles
     volumes:
@@ -186,7 +224,12 @@ With a `.env` beside it:
 DOMAIN_NAME=yourdomain.com
 SUBDOMAIN=n8n
 SSL_EMAIL=you@yourdomain.com
+N8N_ENCRYPTION_KEY=   # openssl rand -hex 24 — set once, keep it; it decrypts stored credentials
 ```
+
+Set `N8N_ENCRYPTION_KEY` yourself rather than letting n8n auto-generate one into the volume. If the
+`n8n_data` volume is ever rebuilt without it, every stored credential (your Google service account)
+becomes undecryptable and must be re-entered.
 
 Then `docker compose up -d`.
 
@@ -197,6 +240,8 @@ Then `docker compose up -d`.
 - **`N8N_PROXY_HOPS=1`** — tells n8n it's behind one reverse proxy.
 - **`GENERIC_TIMEZONE=America/Los_Angeles`** — the whole booking model is LA wall-clock. A workflow
   running in UTC will compute the wrong day's availability. Match it deliberately.
+- **`N8N_ENCRYPTION_KEY`** — the key that decrypts stored credentials. Set it explicitly and back it
+  up; without the original key a rebuilt volume can't read your saved Google credential.
 - The **`n8n_data` volume** holds your workflows and credentials. Lose it, lose everything.
 
 ### Then
@@ -305,7 +350,7 @@ reviewer will poke at.
 | Cloudflare Workers | Free tier is fine |
 | Cloudflare Images | Free-tier transformation allowance is far above portfolio traffic |
 | Google Sheets | Free |
-| VPS for n8n | ~$5/mo |
+| VPS for n8n | **Free** — Oracle Cloud Always Free tier (or ~$5/mo elsewhere) |
 | n8n | Free self-hosted |
 | ElevenLabs | **Per minute of conversation** — the only meaningful cost |
 
