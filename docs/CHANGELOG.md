@@ -3,6 +3,26 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Retargeted the **n8n deployment** from Oracle Cloud to **Google Cloud Compute Engine**. No
+application code changed — this is deployment config and docs only. The frontend stays on Cloudflare
+Workers.
+
+### Added
+- [`deploy/n8n/`](../deploy/n8n): a Docker Compose stack running **n8n + Caddy** (automatic HTTPS),
+  an idempotent `setup.sh` (apt update, Docker + Compose, 2 GB swap, `compose up -d`), a `backup.sh`
+  (consistent SQLite snapshot + `.env`, 7-archive retention), and `.env.example`.
+- [`docs/deployment-google-cloud.md`](deployment-google-cloud.md): full VM guide — create the
+  e2-micro, firewall (only 22/80/443), browser SSH, DNS with an ephemeral IP, start/stop, logs, safe
+  updates, backup/restore, low-memory troubleshooting, and HTTPS webhook verification.
+
+### Changed
+- n8n runs SQLite on a persistent volume (no Postgres — the e2-micro is memory-constrained), behind
+  Caddy instead of Traefik, with n8n bound to `127.0.0.1` so only 80/443/22 are ever public.
+- `runbook.md` §3 and the cost table, and the README "Going live" step, now point at Google Cloud.
+- `.gitignore` excludes `deploy/n8n/backups/` (archives contain `.env`).
+
 ## [0.1.3] — 2026-07-17
 
 Retargeted deployment from Vercel to Cloudflare Workers. No application code changed —

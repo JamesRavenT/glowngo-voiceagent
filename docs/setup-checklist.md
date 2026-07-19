@@ -1,7 +1,7 @@
 # Setup checklist — testing the voice agent
 
 What **you** need to create, and what goes in `.env.local`. This is the short path.
-[`runbook.md`](runbook.md) has the full detail (Docker compose, Traefik, failure modes) — go there
+[`runbook.md`](runbook.md) has the full detail (Docker compose, Caddy, failure modes) — go there
 when a step below needs more than a sentence.
 
 ## The key point first

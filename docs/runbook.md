@@ -116,124 +116,39 @@ Record: **spreadsheet id** (from the URL) and the **service account JSON**.
 
 ---
 
-## 3. n8n on a VPS with Docker
+## 3. n8n on a VM with Docker
 
 You need n8n reachable at a **public HTTPS URL**, because ElevenLabs' servers call it directly.
 `localhost` and self-signed certs will not work.
 
+**The full, step-by-step VM guide is [`deployment-google-cloud.md`](deployment-google-cloud.md)** —
+creating the Compute Engine e2-micro, the firewall (only 22/80/443), the setup script, DNS with an
+ephemeral IP, updates, backup/restore, and low-memory troubleshooting. This section keeps only the
+n8n-specific reasoning that matters wherever you host it.
+
 ### Requirements
-- A VPS — any provider. Below is the **Oracle Cloud Free Tier** path actually used here.
-- A domain or subdomain pointed at its IP, e.g. `n8n.yourdomain.com`
-- Docker + Docker Compose
+- A VM at a public IP — the guide uses a **Google Cloud Compute Engine e2-micro** (Always Free in
+  `us-west1`). Any Docker host works.
+- A domain or subdomain pointed at its IP, e.g. `n8n.yourdomain.com`.
+- Docker Engine + the Compose plugin (the setup script installs these).
 
-### Oracle Cloud Free Tier — the parts that will bite
+### The config
 
-Three traps, none guessable from the outside:
+Everything is in [`deploy/n8n/`](../deploy/n8n): `docker-compose.yml` runs **n8n + Caddy** (Caddy
+terminates TLS and gets a Let's Encrypt certificate automatically), `setup.sh` bootstraps the VM,
+`backup.sh` snapshots the data, and `.env.example` is the template. Copy it to `.env`, fill in your
+domain, email, and encryption key, then `./setup.sh`. n8n uses SQLite on the `n8n_data` volume — no
+separate database.
 
-1. **Two firewalls, not one.** Oracle has a cloud-level firewall (VCN Security List / NSG) **and**
-   the Ubuntu image ships with restrictive `iptables` rules that `REJECT` almost everything. Opening
-   80/443 in the console is *not enough* — you must open them in the instance too, or Traefik never
-   sees traffic and the Let's Encrypt cert silently never issues.
-2. **Ampere capacity.** The good shape (`VM.Standard.A1.Flex`, ARM64 — 1 OCPU / 6 GB is ample) is
-   often "out of capacity" in busy regions. Retry, change home region, or fall back to the
-   always-available `VM.Standard.E2.1.Micro` (1 GB x86 — tight but works).
-3. **Cloudflare proxy breaks the cert.** The n8n subdomain must be **DNS only (grey cloud)**. Traefik
-   gets its cert via a TLS challenge on port 443; a proxied (orange-cloud) record intercepts 443 and
-   the challenge never reaches Traefik — issuance hangs forever.
+> **If your DNS is on Cloudflare, the n8n record must be _DNS only_ (grey cloud).** Caddy gets its
+> certificate over ports 80/443; a proxied (orange-cloud) record intercepts them and issuance hangs
+> forever. Same trap regardless of host.
 
-Steps:
+Set `N8N_ENCRYPTION_KEY` yourself (`openssl rand -hex 24`) rather than letting n8n auto-generate one
+into the volume. If the `n8n_data` volume is ever rebuilt without it, every stored credential (your
+Google service account) becomes undecryptable and must be re-entered.
 
-1. **Instance** — Ubuntu 24.04, shape `VM.Standard.A1.Flex` (ARM64, 1 OCPU / 6 GB). Upload your SSH
-   public key; you log in as `ubuntu`.
-2. **Reserve the public IP** — VNIC → the public IP → edit → **reserved**. Ephemeral IPs can change
-   on stop/start and break DNS.
-3. **Cloud firewall** — VCN → subnet → Security List → add ingress: source `0.0.0.0/0`, TCP, ports
-   **80** and **443** (22 is already open).
-4. **Instance firewall** (the trap) — SSH in and run:
-   ```bash
-   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
-   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
-   sudo netfilter-persistent save   # without this the rules vanish on reboot
-   ```
-5. **DNS** (Cloudflare) — add an `A` record: name `n8n`, value = the reserved IP,
-   **proxy status DNS only**.
-6. **Docker** —
-   ```bash
-   curl -fsSL https://get.docker.com | sudo sh
-   sudo usermod -aG docker ubuntu   # then log out and back in
-   ```
-
-### `compose.yaml`
-
-Traefik terminates TLS and gets certificates from Let's Encrypt automatically.
-
-```yaml
-services:
-  traefik:
-    image: traefik
-    restart: always
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
-      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
-      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - traefik_data:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
-  n8n:
-    image: docker.n8n.io/n8nio/n8n
-    restart: always
-    ports:
-      - "127.0.0.1:5678:5678"
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
-      - traefik.http.routers.n8n.tls=true
-      - traefik.http.routers.n8n.entrypoints=web,websecure
-      - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
-    environment:
-      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=https
-      - NODE_ENV=production
-      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
-      - N8N_PROXY_HOPS=1
-      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
-      - GENERIC_TIMEZONE=America/Los_Angeles
-      - TZ=America/Los_Angeles
-    volumes:
-      - n8n_data:/home/node/.n8n
-
-volumes:
-  n8n_data:
-  traefik_data:
-```
-
-With a `.env` beside it:
-
-```dotenv
-DOMAIN_NAME=yourdomain.com
-SUBDOMAIN=n8n
-SSL_EMAIL=you@yourdomain.com
-N8N_ENCRYPTION_KEY=   # openssl rand -hex 24 — set once, keep it; it decrypts stored credentials
-```
-
-Set `N8N_ENCRYPTION_KEY` yourself rather than letting n8n auto-generate one into the volume. If the
-`n8n_data` volume is ever rebuilt without it, every stored credential (your Google service account)
-becomes undecryptable and must be re-entered.
-
-Then `docker compose up -d`.
-
-### The two settings that matter most
+### The settings that matter most
 
 - **`WEBHOOK_URL`** — without it, n8n shows webhook URLs based on its *internal* address, you paste
   those into ElevenLabs, and calls silently never arrive. This is the classic self-host failure.
@@ -350,7 +265,7 @@ reviewer will poke at.
 | Cloudflare Workers | Free tier is fine |
 | Cloudflare Images | Free-tier transformation allowance is far above portfolio traffic |
 | Google Sheets | Free |
-| VPS for n8n | **Free** — Oracle Cloud Always Free tier (or ~$5/mo elsewhere) |
+| VM for n8n | **Free** — Google Cloud e2-micro Always Free tier in `us-west1` (or ~$5/mo elsewhere) |
 | n8n | Free self-hosted |
 | ElevenLabs | **Per minute of conversation** — the only meaningful cost |
 
