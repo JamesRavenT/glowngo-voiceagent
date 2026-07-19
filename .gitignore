@@ -40,6 +40,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# n8n deployment backups (contain .env and data — never commit)
+/deploy/n8n/backups/
+
 # cloudflare workers
 /.open-next/
 /.wrangler/
