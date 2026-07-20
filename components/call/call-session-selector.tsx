@@ -15,8 +15,8 @@ function SimulatedSession() {
 }
 
 export function CallSessionSelector() {
-  const { isOpen } = useCall();
-  if (!isOpen) return null;
+  const { hasSession } = useCall();
+  if (!hasSession) return null;
 
   if (publicEnv.agentMode === "live" && publicEnv.elevenLabsAgentId) {
     return (

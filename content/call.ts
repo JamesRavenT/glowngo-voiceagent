@@ -6,6 +6,8 @@ export const callCopy = {
   startCallButton: "Start the call",
   endCallButton: "End call",
   closeButton: "Close",
+  minimizedCallButtonAccessibleName: "Call in progress — reopen",
+  minimizedCallAnnouncement: "Call minimized. The call is still in progress.",
   thankYou: "Thank you for calling Glow & Go. Keep your booking reference handy.",
   bookingSheetLink: "Glow & Go Bookings",
   micPermissionError: "Microphone access was blocked. Allow microphone access in your browser settings, then reopen the call.",

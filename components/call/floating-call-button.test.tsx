@@ -3,11 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CallProvider, useCall } from "@/components/call/call-provider";
 import { FloatingCallButton } from "@/components/call/floating-call-button";
-import { contactCopy } from "@/content";
+import { callCopy, contactCopy } from "@/content";
 
 function CallState() {
-  const { source } = useCall();
-  return <output>{source ?? "closed"}</output>;
+  const { isMinimized, minimize, source } = useCall();
+  return <><output>{source ?? "closed"}</output><button type="button" onClick={minimize}>Minimize</button><span>{isMinimized ? "minimized" : "visible"}</span></>;
 }
 
 function setReducedMotion(matches: boolean) {
@@ -69,5 +69,35 @@ describe("FloatingCallButton", () => {
     const button = screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName });
     expect(button).toHaveAttribute("data-pulse", "false");
     expect(button).not.toHaveClass("floating-call-button--pulse");
+  });
+
+  it("morphs into a focused live-call button that restores instead of opening a new call", () => {
+    renderButton();
+    fireEvent.click(screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName }));
+    fireEvent.click(screen.getByRole("button", { name: "Minimize" }));
+
+    const liveButton = screen.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName });
+    expect(liveButton).toHaveFocus();
+    expect(liveButton).toHaveAttribute("data-live", "true");
+    expect(liveButton).not.toHaveAttribute("data-expanded");
+
+    window.scrollY = 100;
+    fireEvent.scroll(window);
+    expect(liveButton).not.toHaveAttribute("data-expanded");
+
+    fireEvent.click(liveButton);
+    expect(screen.getByText("visible")).toBeInTheDocument();
+    expect(screen.getByText("floating")).toBeInTheDocument();
+  });
+
+  it("keeps the rotating indicators static under reduced motion", () => {
+    setReducedMotion(true);
+    renderButton();
+    fireEvent.click(screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName }));
+    fireEvent.click(screen.getByRole("button", { name: "Minimize" }));
+
+    const liveButton = screen.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName });
+    expect(liveButton).toHaveAttribute("data-pulse", "false");
+    expect(liveButton.querySelectorAll("[style*='rotate']")).toHaveLength(0);
   });
 });

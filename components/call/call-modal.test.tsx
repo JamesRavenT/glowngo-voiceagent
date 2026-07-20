@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CallModal } from "@/components/call/call-modal";
 import { CallProvider, useCall } from "@/components/call/call-provider";
 import type { CallSession } from "@/components/call/call-session";
+import { FloatingCallButton } from "@/components/call/floating-call-button";
 import { callCopy, salon } from "@/content";
 import { publicEnv } from "@/lib/env";
 
@@ -50,7 +51,7 @@ function makeSession(overrides: Partial<CallSession> = {}): CallSession {
   };
 }
 
-function StatefulSession() {
+function StatefulSession({ mode }: { mode: "live" | "simulated" }) {
   const [session, setSession] = useState<CallSession>(() => makeSession({
     status: "consent",
     elapsedSeconds: 0,
@@ -59,13 +60,14 @@ function StatefulSession() {
   const start = () => setSession((current) => ({ ...current, status: "connecting", start, end, fail }));
   const end = () => setSession((current) => ({ ...current, status: "ended", start, end, fail }));
   const fail = (message: string) => setSession((current) => ({ ...current, status: "error", errorMessage: message, start, end, fail }));
-  return <CallModal session={{ ...session, start, end, fail }} />;
+  return <CallModal session={{ ...session, start, end, fail }} mode={mode} />;
 }
 
 function renderModal(session = makeSession()) {
   return render(
     <CallProvider>
       <Triggers />
+      <FloatingCallButton />
       <CallModal session={session} />
     </CallProvider>,
   );
@@ -141,9 +143,9 @@ describe("CallModal", () => {
     expect(screen.getByRole("button", { name: callCopy.startCallButton })).toHaveFocus();
   });
 
-  it("stops a connecting attempt at 20 seconds and shows the connection error", () => {
+  it("stops a live connecting attempt at 20 seconds and shows the connection error", () => {
     vi.useFakeTimers();
-    render(<CallProvider><Triggers /><StatefulSession /></CallProvider>);
+    render(<CallProvider><Triggers /><StatefulSession mode="live" /></CallProvider>);
     fireEvent.click(screen.getByRole("button", { name: "Contact call" }));
     fireEvent.click(screen.getByRole("button", { name: callCopy.startCallButton }));
 
@@ -153,6 +155,20 @@ describe("CallModal", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent(callCopy.connectionError);
     expect(AudioStub.instances[0]?.pause).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
+
+  it("does not fail a simulated connecting attempt after the live connection timeout", () => {
+    vi.useFakeTimers();
+    render(<CallProvider><Triggers /><StatefulSession mode="simulated" /></CallProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "Contact call" }));
+    fireEvent.click(screen.getByRole("button", { name: callCopy.startCallButton }));
+
+    act(() => vi.advanceTimersByTime(60_000));
+
+    expect(screen.getByText("Connecting")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(AudioStub.instances[0]?.pause).not.toHaveBeenCalled();
     vi.useRealTimers();
   });
 
@@ -198,16 +214,66 @@ describe("CallModal", () => {
     expect(screen.queryByText("Simulated preview — no live agent connected")).not.toBeInTheDocument();
   });
 
-  it.each(["Contact call", "Floating call"])("opens from %s and returns focus after Escape", (triggerName) => {
-    renderModal();
-    const trigger = screen.getByRole("button", { name: triggerName });
+  it.each(["consent", "ended", "error"] as const)("Escape closes the modal and restores focus when status is %s", (status) => {
+    renderModal(makeSession({ status }));
+    const trigger = screen.getByRole("button", { name: "Contact call" });
     trigger.focus();
     fireEvent.click(trigger);
     const dialog = screen.getByRole("dialog");
-    expect(dialog).toHaveAttribute("open");
 
     fireEvent(dialog, new Event("cancel", { bubbles: false, cancelable: true }));
     expect(dialog).not.toHaveAttribute("open");
     expect(trigger).toHaveFocus();
+    expect(screen.queryByRole("button", { name: callCopy.minimizedCallButtonAccessibleName })).not.toBeInTheDocument();
+  });
+
+  it.each(["Escape", "backdrop", "close button"])("minimizes a live call from the %s and focuses the call bubble", (gesture) => {
+    const session = makeSession();
+    renderModal(session);
+    const trigger = screen.getByRole("button", { name: "Contact call" });
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog");
+
+    if (gesture === "Escape") {
+      fireEvent(dialog, new Event("cancel", { bubbles: false, cancelable: true }));
+    } else if (gesture === "backdrop") {
+      fireEvent.click(dialog);
+    } else {
+      fireEvent.click(screen.getByRole("button", { name: callCopy.closeButton }));
+    }
+
+    expect(dialog).not.toHaveAttribute("open");
+    expect(screen.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName })).toHaveFocus();
+    expect(screen.getByText(callCopy.minimizedCallAnnouncement)).toHaveAttribute("role", "status");
+    expect(session.end).not.toHaveBeenCalled();
+  });
+
+  it.each(["Escape", "backdrop", "close button"])("closes an unaccepted consent screen from the %s", (gesture) => {
+    renderModal(makeSession({ status: "consent" }));
+    fireEvent.click(screen.getByRole("button", { name: "Contact call" }));
+    const dialog = screen.getByRole("dialog");
+
+    if (gesture === "Escape") {
+      fireEvent(dialog, new Event("cancel", { bubbles: false, cancelable: true }));
+    } else if (gesture === "backdrop") {
+      fireEvent.click(dialog);
+    } else {
+      fireEvent.click(screen.getByRole("button", { name: callCopy.closeButton }));
+    }
+
+    expect(dialog).not.toHaveAttribute("open");
+    expect(screen.queryByRole("button", { name: callCopy.minimizedCallButtonAccessibleName })).not.toBeInTheDocument();
+  });
+
+  it("reopens a minimized call and moves focus into the dialog", () => {
+    renderModal();
+    fireEvent.click(screen.getByRole("button", { name: "Contact call" }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent(dialog, new Event("cancel", { bubbles: false, cancelable: true }));
+
+    fireEvent.click(screen.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName }));
+
+    expect(dialog).toHaveAttribute("open");
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { X } from "lucide-react";
 
 import { useCall } from "@/components/call/call-provider";
 import type { CallSession } from "@/components/call/call-session";
@@ -29,17 +30,20 @@ function releaseAudio(audio: HTMLAudioElement) {
 }
 
 export function CallModal({ session = staticCallSessionFixture, mode = "simulated" }: { session?: CallSession; mode?: AgentMode }) {
-  const { isOpen, close } = useCall();
+  const { isOpen, close, minimize } = useCall();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const startButtonRef = useRef<HTMLButtonElement>(null);
   const terminalButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dismissalRef = useRef<"close" | "minimize">("close");
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
   const hasPlayedEndSoundRef = useRef(false);
   const reducedMotion = usePrefersReducedMotion();
   const failSession = session.fail;
   const isActive = session.status === "listening" || session.status === "speaking" || session.status === "thinking";
+  const isLive = session.status === "connecting" || isActive;
   const showTranscript = isActive || session.status === "ended";
 
   useEffect(() => {
@@ -47,9 +51,11 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
     if (!dialog) return;
 
     if (isOpen && !dialog.open) {
-      returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      if (!returnFocusRef.current) {
+        returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      }
       dialog.showModal();
-      startButtonRef.current?.focus();
+      (startButtonRef.current ?? closeButtonRef.current)?.focus();
     } else if (!isOpen && dialog.open) {
       dialog.close();
     }
@@ -68,13 +74,15 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
     ringtoneRef.current = ringtone;
     playAudio(ringtone);
 
-    const timeout = window.setTimeout(() => failSession(callCopy.connectionError), CONNECTION_TIMEOUT_MS);
+    const timeout = mode === "live"
+      ? window.setTimeout(() => failSession(callCopy.connectionError), CONNECTION_TIMEOUT_MS)
+      : undefined;
     return () => {
-      window.clearTimeout(timeout);
+      if (timeout !== undefined) window.clearTimeout(timeout);
       releaseAudio(ringtone);
       if (ringtoneRef.current === ringtone) ringtoneRef.current = null;
     };
-  }, [failSession, session.status]);
+  }, [failSession, mode, session.status]);
 
   useEffect(() => {
     if (session.status !== "ended" || hasPlayedEndSoundRef.current) return;
@@ -95,11 +103,25 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
   }, []);
 
   const handleClosed = () => {
-    close();
-    returnFocusRef.current?.focus();
+    if (dismissalRef.current === "minimize") {
+      minimize();
+    } else {
+      close();
+      returnFocusRef.current?.focus();
+      returnFocusRef.current = null;
+    }
+    dismissalRef.current = "close";
   };
 
-  const closeDialog = () => dialogRef.current?.close();
+  const dismissDialog = () => {
+    dismissalRef.current = isLive ? "minimize" : "close";
+    dialogRef.current?.close();
+  };
+
+  const closeDialog = () => {
+    dismissalRef.current = "close";
+    dialogRef.current?.close();
+  };
 
   return (
     <dialog
@@ -107,9 +129,12 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
       aria-labelledby="call-dialog-title"
       onCancel={(event) => {
         event.preventDefault();
-        closeDialog();
+        dismissDialog();
       }}
       onClose={handleClosed}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) dismissDialog();
+      }}
       className="call-dialog"
     >
       <section className="call-dialog__panel">
@@ -118,9 +143,14 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
             <h2 id="call-dialog-title" className="font-inherit text-inherit">Glow & Go voice assistant</h2>
             <p aria-live="polite" aria-atomic="true" className="mt-1 text-copper">{callCopy.statusLabels[session.status]}</p>
           </div>
-          <time className="tabular-nums text-cream" aria-label={`Call duration ${formatCallDuration(session.elapsedSeconds)}`}>
-            {formatCallDuration(session.elapsedSeconds)}
-          </time>
+          <div className="flex items-center gap-3">
+            <time className="tabular-nums text-cream" aria-label={`Call duration ${formatCallDuration(session.elapsedSeconds)}`}>
+              {formatCallDuration(session.elapsedSeconds)}
+            </time>
+            <button ref={closeButtonRef} type="button" aria-label={callCopy.closeButton} onClick={dismissDialog} className="relative z-10 rounded-full p-1 text-cream hover:bg-copper hover:text-ink">
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          </div>
         </header>
 
         {mode === "simulated" && (

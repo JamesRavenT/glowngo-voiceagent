@@ -125,11 +125,14 @@ Shipped: **v0.1.3** — Cloudflare Workers deploy target (`docs/plans/v0.1.3.md`
 structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
 `docs/CHANGELOG.md` for what changed.
 
-**Build gotchas that look like cruft — do not "clean up". All three are load-bearing:**
+**Build gotchas that look like cruft — do not "clean up". All four are load-bearing:**
 
 - **`build` is `next build --webpack`.** Next 16 defaults to Turbopack; the Cloudflare adapter cannot
-  resolve Turbopack's server chunks and every route 500s with `ChunkLoadError`. `test:e2e` runs
-  `pnpm build` so the tested artifact matches production. `dev` stays on Turbopack.
+  resolve Turbopack's server chunks and every route 500s with `ChunkLoadError`. `dev` stays on
+  Turbopack.
+- **The e2e build pins simulated agent mode.** `build:e2e` runs the same webpack build while
+  overriding live credentials from `.env`; otherwise a developer's live configuration makes the
+  suite attempt real voice calls.
 - **`.npmrc` pins `node-linker=hoisted`** — without it the adapter build fails on Windows with
   `EPERM` on symlink.
 - **`eslint.config.mjs` must ignore `.open-next/**`** — the explicit `globalIgnores` overrides
