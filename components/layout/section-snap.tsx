@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { type ReactNode, useRef } from "react";
 
+import { SECTION_SCROLL_OFFSET_PX } from "@/components/layout/section";
 import {
   SECTION_SNAP_LAND_EVENT,
   type SectionSnapLandDetail,
@@ -54,8 +55,10 @@ export function SectionSnap({ children }: { children: ReactNode }) {
       let touchStartY: number | undefined;
       let touchTriggered = false;
 
-      const getPanelTops = () =>
-        panels.map((panel) => panel.getBoundingClientRect().top + window.scrollY);
+      const getScrollTargetY = (target: Element) =>
+        Math.max(0, target.getBoundingClientRect().top + window.scrollY - SECTION_SCROLL_OFFSET_PX);
+
+      const getPanelTops = () => panels.map(getScrollTargetY);
 
       const updateCurrentPanel = () => {
         currentPanelIndex = getCurrentPanelIndex(getPanelTops(), window.scrollY);
@@ -105,8 +108,9 @@ export function SectionSnap({ children }: { children: ReactNode }) {
 
         if (panelIndex !== undefined) currentPanelIndex = panelIndex;
 
+        const y = target instanceof Element ? getScrollTargetY(target) : target;
         scrollTween = gsap.to(window, {
-          scrollTo: { y: target, autoKill: false },
+          scrollTo: { y, autoKill: false },
           duration: scrollDuration,
           ease: "power2.inOut",
           overwrite: "auto",
@@ -123,7 +127,7 @@ export function SectionSnap({ children }: { children: ReactNode }) {
       const panelAllowsNativeScroll = (direction: -1 | 1) => {
         updateCurrentPanel();
         const panel = panels[currentPanelIndex];
-        const panelTop = panel.getBoundingClientRect().top + window.scrollY;
+        const panelTop = getScrollTargetY(panel);
         const panelBottom = panelTop + panel.offsetHeight;
 
         if (panel.offsetHeight <= window.innerHeight + panelEdgeTolerance) return false;
@@ -311,7 +315,7 @@ export function SectionSnap({ children }: { children: ReactNode }) {
 
         const panelIndex = getPanelIndexForTarget(target);
         const scrollTarget = panelIndex >= 0 ? panels[panelIndex] : target;
-        gsap.set(window, { scrollTo: { y: scrollTarget, autoKill: false } });
+        gsap.set(window, { scrollTo: { y: getScrollTargetY(scrollTarget), autoKill: false } });
         updateCurrentPanel();
         announceLanding();
       };

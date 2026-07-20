@@ -49,15 +49,12 @@
   html { @apply bg-ink font-body text-cream; }
   body { @apply bg-background text-foreground; }
   :focus-visible { @apply outline-2 outline-offset-4 outline-gold-hi; }
-  section[id] { scroll-margin-top: 5rem; }
   [data-snap-panel] {
     height: 100svh;
     min-height: 100svh;
     max-height: 100svh;
     overflow: hidden;
   }
-  section[id][data-snap-panel],
-  [data-snap-panel] section[id] { scroll-margin-top: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2,6 +2,7 @@ import { voiceAgent } from "./agent";
 
 export const callCopy = {
   simulatedBadge: "Simulated preview — no live agent connected",
+  consentHeading: "Read this before you call",
   publicBookingWarning: "Use a made-up name and phone number. Demo bookings appear in a publicly visible sheet.",
   startCallButton: "Start the call",
   endCallButton: "End call",

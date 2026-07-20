@@ -39,6 +39,18 @@ test("navigation scrolls to a section and identifies the active location", async
   }
 });
 
+test("every section heading clears the fixed navbar when navigated by hash", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+
+  for (const id of ["about", "services", "locations", "faq", "contact"]) {
+    await page.locator(`a[href="#${id}"]`).first().evaluate((anchor: HTMLAnchorElement) => anchor.click());
+    await expect(page).toHaveURL(new RegExp(`#${id}$`));
+    await expect.poll(async () => page.locator(`#${id}-heading`).evaluate((heading) => heading.getBoundingClientRect().top))
+      .toBeGreaterThanOrEqual(80);
+  }
+});
+
 test("navbar changes from transparent over the hero to solid after scrolling", async ({ page }) => {
   const navbar = page.getByRole("banner");
   await expect(navbar).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");

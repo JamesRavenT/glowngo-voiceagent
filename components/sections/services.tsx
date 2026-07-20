@@ -1,3 +1,4 @@
+import { Section } from "@/components/layout/section";
 import { serviceCategories, services, servicesCopy, siteCopy } from "@/content";
 import type { ServiceCategory } from "@/content";
 import { formatDuration, formatPrice } from "@/lib/format";
@@ -64,7 +65,7 @@ export function Services() {
   const heading = siteCopy.sections.find((section) => section.id === "services")!.heading;
 
   return (
-    <section
+    <Section
       id="services"
       data-snap-panel
       aria-labelledby="services-heading"
@@ -77,7 +78,7 @@ export function Services() {
 
       <header className="relative z-10 mx-auto w-full max-w-7xl shrink-0 lg:text-center">
         <p className="font-utility text-[0.65rem] uppercase tracking-[0.2em] text-copper">
-          {heading}
+          {servicesCopy.eyebrow}
         </p>
         <h2
           id="services-heading"
@@ -99,6 +100,6 @@ export function Services() {
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

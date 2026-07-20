@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { Section } from "@/components/layout/section";
 import { faq, siteCopy } from "@/content";
 
 export function Faq() {
@@ -20,7 +21,7 @@ export function Faq() {
   };
 
   return (
-    <section id="faq" data-snap-panel aria-labelledby="faq-heading" className="nocturne-panel border-b border-gold-lo/30 px-5 pb-5 pt-20 sm:px-10 sm:pb-8 sm:pt-24 lg:px-[5vw] lg:py-[9vh]">
+    <Section id="faq" data-snap-panel aria-labelledby="faq-heading" className="nocturne-panel border-b border-gold-lo/30 px-5 pb-5 pt-20 sm:px-10 sm:pb-8 sm:pt-24 lg:px-[5vw] lg:py-[9vh]">
       <div className="mx-auto flex h-full max-w-[90rem] flex-col gap-3 lg:grid lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-[5vw]">
         <div className="faq-orbit flex shrink-0 flex-col lg:h-[68vh] lg:justify-center lg:text-center">
           <p className="font-utility text-[0.62rem] uppercase tracking-[0.22em] text-copper">FAQ</p>
@@ -45,6 +46,6 @@ export function Faq() {
           })}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

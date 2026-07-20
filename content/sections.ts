@@ -1,4 +1,5 @@
 export const servicesCopy = {
+  eyebrow: "What we offer",
   tableCaption: "Glow & Go services, durations, and prices",
   serviceColumn: "Service",
   durationColumn: "Duration",

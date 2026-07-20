@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { useCall } from "@/components/call/call-provider";
 import type { CallSession } from "@/components/call/call-session";
 import { staticCallSessionFixture } from "@/components/call/static-call-session.fixture";
+import { Transcript } from "@/components/call/transcript";
 import { LiveWaveform } from "@/components/ui/live-waveform";
 import { callCopy, salon } from "@/content";
 import type { AgentMode } from "@/lib/env";
@@ -14,6 +15,7 @@ import { formatCallDuration } from "@/lib/format";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 const CONNECTION_TIMEOUT_MS = 20_000;
+const RINGTONE_VOLUME = 0.5;
 
 function playAudio(audio: HTMLAudioElement) {
   try {
@@ -71,6 +73,7 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
 
     const ringtone = new Audio("/audio/ring.wav");
     ringtone.loop = true;
+    ringtone.volume = RINGTONE_VOLUME;
     ringtoneRef.current = ringtone;
     playAudio(ringtone);
 
@@ -160,7 +163,10 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
         )}
 
         {session.status === "consent" && (
-          <div className="relative z-10 mt-5 space-y-3 text-sm leading-relaxed text-cream">
+          <div data-call-state="consent" className="relative z-10 mt-5 space-y-3 text-center text-sm leading-relaxed text-cream">
+            <h3 className="font-display text-3xl font-semibold leading-none tracking-[-0.025em] text-gold-hi sm:text-4xl">
+              {callCopy.consentHeading}
+            </h3>
             <p>{salon.disclaimer}</p>
             <p className="text-muted">{callCopy.publicBookingWarning}</p>
             <button ref={startButtonRef} type="button" onClick={session.start} className="mt-2 w-full border border-copper bg-copper px-4 py-3 font-utility text-xs font-semibold uppercase tracking-[0.14em] text-ink hover:bg-gold-hi">
@@ -196,18 +202,12 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
         ))}
 
         {showTranscript && (
-          <div aria-live="polite" aria-label="Call transcript" className="call-dialog__transcript mt-4">
-            {session.transcript.map((entry) => {
-              const speaker = entry.speaker === "agent" ? "Agent" : "Caller";
-              return (
-                <p key={entry.id} className="grid grid-cols-[4.5rem_1fr] gap-2 py-1.5">
-                  <span className="font-semibold uppercase tracking-[0.08em] text-gold-hi">{speaker}</span>
-                  <span><span className="sr-only">{speaker} says: </span>{entry.text}</span>
-                </p>
-              );
-            })}
-            <div ref={transcriptEndRef} aria-hidden="true" />
-          </div>
+          <Transcript
+            entries={session.transcript}
+            status={session.status}
+            reducedMotion={reducedMotion}
+            endRef={transcriptEndRef}
+          />
         )}
 
         {(session.status === "connecting" || isActive) && (

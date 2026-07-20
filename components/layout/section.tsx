@@ -1,24 +1,42 @@
-type SectionProps = {
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
+
+export const SECTION_SCROLL_OFFSET_PX = 96;
+
+type SectionProps = Omit<ComponentPropsWithoutRef<"section">, "id"> & {
   id: string;
-  heading: string;
+  heading?: string;
   headingLevel?: 1 | 2;
+  children?: ReactNode;
 };
 
-export function Section({ id, heading, headingLevel = 2 }: SectionProps) {
+export function Section({
+  id,
+  heading,
+  headingLevel = 2,
+  children,
+  className,
+  ...props
+}: SectionProps) {
   const Heading = headingLevel === 1 ? "h1" : "h2";
 
   return (
     <section
       id={id}
-      aria-labelledby={`${id}-heading`}
-      className="flex min-h-[70svh] items-center border-b border-gold-lo/30 px-6 py-24 sm:px-10 lg:px-16"
+      aria-labelledby={props["aria-labelledby"] ?? (heading ? `${id}-heading` : undefined)}
+      className={cn("scroll-mt-24", className)}
+      {...props}
     >
-      <Heading
-        id={`${id}-heading`}
-        className="font-display text-5xl font-medium tracking-[-0.055em] text-cream sm:text-7xl"
-      >
-        {heading}
-      </Heading>
+      {heading && (
+        <Heading
+          id={`${id}-heading`}
+          className="font-display text-5xl font-medium tracking-[-0.055em] text-cream sm:text-7xl"
+        >
+          {heading}
+        </Heading>
+      )}
+      {children}
     </section>
   );
 }

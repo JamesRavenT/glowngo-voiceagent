@@ -1,8 +1,9 @@
+import { Section } from "@/components/layout/section";
 import { about } from "@/content";
 
 export function About() {
   return (
-    <section
+    <Section
       id="about"
       data-snap-panel
       aria-labelledby="about-heading"
@@ -25,6 +26,6 @@ export function About() {
           ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { Section } from "@/components/layout/section";
 import { branches, locationsCopy, siteCopy } from "@/content";
 import type { DayOfWeek, OpeningHours, WeeklyHours } from "@/content";
 
@@ -62,7 +63,7 @@ export function Locations() {
   const heading = siteCopy.sections.find((section) => section.id === "locations")!.heading;
 
   return (
-    <section
+    <Section
       id="locations"
       data-snap-panel
       aria-labelledby="locations-heading"
@@ -123,6 +124,6 @@ export function Locations() {
           </article>
         ))}
       </div>
-    </section>
+    </Section>
   );
 }

@@ -1,11 +1,12 @@
 import Image from "next/image";
 
+import { Section } from "@/components/layout/section";
 import { HeroCallButton } from "@/components/sections/hero-call-button";
 import { salon, siteCopy } from "@/content";
 
 export function Hero() {
   return (
-    <section
+    <Section
       id="hero"
       data-snap-panel
       aria-labelledby="hero-heading"
@@ -43,6 +44,6 @@ export function Hero() {
           {salon.disclaimer}
         </p>
       </div>
-    </section>
+    </Section>
   );
 }

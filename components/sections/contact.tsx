@@ -2,6 +2,7 @@
 
 import { Mic } from "lucide-react";
 import { useCall } from "@/components/call/call-provider";
+import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { contactCopy, examplePhrases, siteCopy } from "@/content";
 import { publicEnv } from "@/lib/env";
@@ -13,7 +14,7 @@ export function Contact({ bookingSheetUrl = publicEnv.bookingSheetUrl }: { booki
   const heading = siteCopy.sections.find((section) => section.id === "contact")!.heading;
 
   return (
-    <section id="contact" aria-labelledby="contact-heading" className="nocturne-panel min-h-0 flex-1 overflow-hidden border-b border-gold-lo/30 px-5 pb-3 pt-[4.5rem] sm:px-10 sm:pb-5 sm:pt-24 lg:px-[6vw] lg:py-[7vh]">
+    <Section id="contact" aria-labelledby="contact-heading" className="nocturne-panel min-h-0 flex-1 overflow-hidden border-b border-gold-lo/30 px-5 pb-3 pt-[4.5rem] sm:px-10 sm:pb-5 sm:pt-24 lg:px-[6vw] lg:py-[7vh]">
       <div className="mx-auto grid h-full max-w-7xl content-center gap-3 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:gap-[8vw]">
         <div className="text-center lg:text-left">
           <p className="font-utility text-[0.62rem] uppercase tracking-[0.22em] text-copper">{contactCopy.eyebrow}</p>
@@ -36,6 +37,6 @@ export function Contact({ bookingSheetUrl = publicEnv.bookingSheetUrl }: { booki
           </div>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
