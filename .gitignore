@@ -29,6 +29,7 @@
 Thumbs.db
 Desktop.ini
 *.pem
+.sentryclirc
 
 # debug
 npm-debug.log*
