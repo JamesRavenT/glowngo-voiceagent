@@ -206,29 +206,34 @@ is a small open tap. Consider agent-level limits, or only enabling live mode whi
 
 ---
 
-## 6. Do you need an MCP for me to configure n8n?
+## 6. The n8n MCP — connected, and it earned its place
 
-Honest answer: **no, and it probably isn't worth it.**
+**This section previously said an MCP wasn't worth it. That advice was wrong, and the reasoning
+is worth keeping.**
 
-- **The import is a UI action.** Workflows → Import from File → pick the JSON. Thirty seconds. An
-  MCP to automate a thing you'll do once is a poor trade.
-- **I can't reach your VPS anyway.** I run on your machine. Configuring a remote n8n means giving
-  something network access and an API key.
+The original argument was that importing a workflow is a one-time UI action, so automating it is a
+poor trade. That was right about *import* and wrong about everything after it. The MCP is now
+connected, and on 2026-07-20 it caught three faults that had made the live workflow completely
+non-functional — an inactive workflow, a broken `Append` column mapping, and an `Update` node with
+no matching column. See [v1.0.0-release-checklist.md](v1.0.0-release-checklist.md).
 
-**Where it would genuinely help:** *iterating* on the workflow — debugging why an execution failed,
-adjusting node logic, re-testing — rather than the one-time import. n8n has a REST API (`/api/v1`)
-with API-key auth, and community MCP servers wrap it. If you find yourself going back and forth on
-workflow logic, that's when it earns its place.
+None of those were visible from the repo, because **the repo artifact was correct and the live
+instance had drifted.** Reading live state is exactly the thing hand-import cannot do.
 
-If you want that, say so and I'll research the current options properly before recommending one —
-I'm not going to name a package I haven't verified.
+What it is good for:
+
+- **Reading live state** — `active`, node parameters, attached credentials, execution history.
+  This is where the value is.
+- **Patching nodes** in place, atomically, without a re-import that would drop credentials.
+- **Publishing / unpublishing.**
+
+What it still cannot do:
+
+- **Create credentials.** There is no credential-creation tool. Header Auth, Google OAuth, and
+  anything else with a secret must be set up in the UI by hand.
 
 **Don't confuse two different things:** n8n's own *MCP Server Trigger* / *MCP Client Tool* nodes let
 n8n **act as** an MCP server for AI agents. That's unrelated to configuring n8n via MCP.
-
-**My actual recommendation:** import it by hand. If the workflow misbehaves, paste the execution
-error to me and I'll tell you what to change. That loop is fast enough and needs no new
-infrastructure.
 
 ---
 

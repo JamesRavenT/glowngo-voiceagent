@@ -12,6 +12,7 @@ New to the project? Read [requirements](requirements.md) → [architecture](arch
 | [design.md](design.md) | Brand, tokens, motion, layout rules. |
 | [setup-checklist.md](setup-checklist.md) | Short path: what to create and what goes in `.env.local` to test the agent. |
 | [runbook.md](runbook.md) | Operational guide for taking the demo live (keys, n8n, Sheets). |
+| [v1.0.0-release-checklist.md](v1.0.0-release-checklist.md) | What was verified against live n8n, and the manual steps still outstanding. |
 | [CHANGELOG.md](CHANGELOG.md) | What changed in each release. |
 | [plans/](plans/) | Implementation plan per release. |
 | [decisions/](decisions/) | Architecture decision records — why we chose what we chose. |
