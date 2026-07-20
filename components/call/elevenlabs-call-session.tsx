@@ -1,7 +1,7 @@
 "use client";
 
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { CallSession, CallStatus, TranscriptEntry } from "@/components/call/call-session";
 import { callCopy } from "@/content";
@@ -34,44 +34,85 @@ export function mapElevenLabsError(message: string): string {
 }
 
 function ElevenLabsSession({ children }: { children: (session: CallSession) => React.ReactNode }) {
+  const [status, setStatus] = useState<CallStatus>("consent");
   const [transcript, setTranscript] = useState<readonly TranscriptEntry[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [volumes, setVolumes] = useState({ input: 0, output: 0 });
   const [errorMessage, setErrorMessage] = useState<string>();
-  const startedAtRef = useRef(0);
-  const transcriptCountRef = useRef(0);
+  const [startedAt, setStartedAt] = useState(0);
   const conversation = useConversation({
-    onMessage: (message) => {
-      const at = (Date.now() - startedAtRef.current) / 1000;
-      setTranscript((entries) => [...entries, mapElevenLabsMessage(message, at, transcriptCountRef.current++)]);
+    onConnect: () => setStatus("listening"),
+    onDisconnect: (details) => {
+      if (details.reason === "error") {
+        const mappedMessage = mapElevenLabsError(details.message);
+        setErrorMessage(mappedMessage);
+        setStatus("error");
+      } else {
+        setStatus((current) => current === "error" ? current : "ended");
+      }
     },
-    onError: (message) => setErrorMessage(mapElevenLabsError(message)),
+    onModeChange: ({ mode }) => setStatus(mode),
+    onMessage: (message) => {
+      const at = (Date.now() - startedAt) / 1000;
+      setTranscript((entries) => [...entries, mapElevenLabsMessage(message, at, entries.length)]);
+    },
+    onError: (message) => {
+      const mappedMessage = mapElevenLabsError(message);
+      setErrorMessage(mappedMessage);
+      setStatus("error");
+    },
   });
   const { endSession, getInputVolume, getOutputVolume, startSession } = conversation;
 
-  const end = useCallback(() => endSession(), [endSession]);
+  const start = useCallback(() => {
+    setStartedAt(Date.now());
+    setElapsedSeconds(0);
+    setTranscript([]);
+    setErrorMessage(undefined);
+    setStatus("connecting");
+    try {
+      startSession();
+    } catch (error) {
+      const mappedMessage = mapElevenLabsError(error instanceof Error ? error.message : String(error));
+      setErrorMessage(mappedMessage);
+      setStatus("error");
+    }
+  }, [startSession]);
+
+  const end = useCallback(() => {
+    endSession();
+    setStatus("ended");
+  }, [endSession]);
+
+  const fail = useCallback((message: string) => {
+    endSession();
+    setErrorMessage(message);
+    setStatus("error");
+  }, [endSession]);
 
   useEffect(() => {
-    startedAtRef.current = Date.now();
-    startSession();
+    if (status === "consent" || status === "ended" || status === "error") return;
     const timer = setInterval(() => {
-      setElapsedSeconds((Date.now() - startedAtRef.current) / 1000);
+      setElapsedSeconds((Date.now() - startedAt) / 1000);
       setVolumes({ input: getInputVolume(), output: getOutputVolume() });
     }, 100);
     return () => {
       clearInterval(timer);
-      endSession();
     };
-  }, [endSession, getInputVolume, getOutputVolume, startSession]);
+  }, [getInputVolume, getOutputVolume, startedAt, status]);
+
+  useEffect(() => () => endSession(), [endSession]);
 
   return children({
-    status: errorMessage ? "error" : mapElevenLabsStatus(conversation.status, conversation.mode),
+    status,
     transcript,
     elapsedSeconds,
     inputVolume: volumes.input,
     outputVolume: volumes.output,
     errorMessage,
+    start,
     end,
+    fail,
   });
 }
 

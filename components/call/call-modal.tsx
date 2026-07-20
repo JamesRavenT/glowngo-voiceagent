@@ -3,29 +3,44 @@
 import { useEffect, useRef } from "react";
 
 import { useCall } from "@/components/call/call-provider";
-import type { CallSession, CallStatus } from "@/components/call/call-session";
+import type { CallSession } from "@/components/call/call-session";
 import { staticCallSessionFixture } from "@/components/call/static-call-session.fixture";
 import { LiveWaveform } from "@/components/ui/live-waveform";
-import { formatCallDuration } from "@/lib/format";
-import { callCopy } from "@/content";
+import { callCopy, salon } from "@/content";
 import type { AgentMode } from "@/lib/env";
+import { publicEnv } from "@/lib/env";
+import { formatCallDuration } from "@/lib/format";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
-const statusLabels: Record<CallStatus, string> = {
-  connecting: "Connecting",
-  listening: "Listening",
-  speaking: "Speaking",
-  thinking: "Thinking",
-  ended: "Call ended",
-  error: "Call error",
-};
+const CONNECTION_TIMEOUT_MS = 20_000;
+
+function playAudio(audio: HTMLAudioElement) {
+  try {
+    void audio.play().catch(() => undefined);
+  } catch {
+    // Decorative audio must not interrupt the call flow.
+  }
+}
+
+function releaseAudio(audio: HTMLAudioElement) {
+  audio.pause();
+  audio.currentTime = 0;
+  audio.removeAttribute("src");
+}
 
 export function CallModal({ session = staticCallSessionFixture, mode = "simulated" }: { session?: CallSession; mode?: AgentMode }) {
   const { isOpen, close } = useCall();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+  const terminalButtonRef = useRef<HTMLButtonElement>(null);
+  const ringtoneRef = useRef<HTMLAudioElement | null>(null);
+  const hasPlayedEndSoundRef = useRef(false);
   const reducedMotion = usePrefersReducedMotion();
+  const failSession = session.fail;
+  const isActive = session.status === "listening" || session.status === "speaking" || session.status === "thinking";
+  const showTranscript = isActive || session.status === "ended";
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -34,25 +49,57 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
     if (isOpen && !dialog.open) {
       returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       dialog.showModal();
+      startButtonRef.current?.focus();
     } else if (!isOpen && dialog.open) {
       dialog.close();
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !showTranscript) return;
     transcriptEndRef.current?.scrollIntoView({ block: "nearest" });
-  }, [isOpen, session.transcript]);
+  }, [isOpen, session.transcript, showTranscript]);
+
+  useEffect(() => {
+    if (session.status !== "connecting") return;
+
+    const ringtone = new Audio("/audio/ring.wav");
+    ringtone.loop = true;
+    ringtoneRef.current = ringtone;
+    playAudio(ringtone);
+
+    const timeout = window.setTimeout(() => failSession(callCopy.connectionError), CONNECTION_TIMEOUT_MS);
+    return () => {
+      window.clearTimeout(timeout);
+      releaseAudio(ringtone);
+      if (ringtoneRef.current === ringtone) ringtoneRef.current = null;
+    };
+  }, [failSession, session.status]);
+
+  useEffect(() => {
+    if (session.status !== "ended" || hasPlayedEndSoundRef.current) return;
+    hasPlayedEndSoundRef.current = true;
+    const endSound = new Audio("/audio/end.wav");
+    playAudio(endSound);
+  }, [session.status]);
+
+  useEffect(() => {
+    if (session.status === "ended" || session.status === "error") {
+      terminalButtonRef.current?.focus();
+    }
+  }, [session.status]);
+
+  useEffect(() => () => {
+    if (ringtoneRef.current) releaseAudio(ringtoneRef.current);
+    ringtoneRef.current = null;
+  }, []);
 
   const handleClosed = () => {
     close();
     returnFocusRef.current?.focus();
   };
 
-  const handleEnd = () => {
-    session.end();
-    dialogRef.current?.close();
-  };
+  const closeDialog = () => dialogRef.current?.close();
 
   return (
     <dialog
@@ -60,7 +107,7 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
       aria-labelledby="call-dialog-title"
       onCancel={(event) => {
         event.preventDefault();
-        dialogRef.current?.close();
+        closeDialog();
       }}
       onClose={handleClosed}
       className="call-dialog"
@@ -69,7 +116,7 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
         <header className="flex items-start justify-between gap-6 font-utility text-[0.65rem] uppercase tracking-[0.16em] text-gold-hi">
           <div>
             <h2 id="call-dialog-title" className="font-inherit text-inherit">Glow & Go voice assistant</h2>
-            <p className="mt-1 text-copper">{statusLabels[session.status]}</p>
+            <p aria-live="polite" aria-atomic="true" className="mt-1 text-copper">{callCopy.statusLabels[session.status]}</p>
           </div>
           <time className="tabular-nums text-cream" aria-label={`Call duration ${formatCallDuration(session.elapsedSeconds)}`}>
             {formatCallDuration(session.elapsedSeconds)}
@@ -82,37 +129,68 @@ export function CallModal({ session = staticCallSessionFixture, mode = "simulate
           </p>
         )}
 
-        {session.errorMessage && <p role="alert" className="relative z-10 mt-3 text-sm font-semibold text-cream">{session.errorMessage}</p>}
+        {session.status === "consent" && (
+          <div className="relative z-10 mt-5 space-y-3 text-sm leading-relaxed text-cream">
+            <p>{salon.disclaimer}</p>
+            <p className="text-muted">{callCopy.publicBookingWarning}</p>
+            <button ref={startButtonRef} type="button" onClick={session.start} className="mt-2 w-full border border-copper bg-copper px-4 py-3 font-utility text-xs font-semibold uppercase tracking-[0.14em] text-ink hover:bg-gold-hi">
+              {callCopy.startCallButton}
+            </button>
+          </div>
+        )}
 
-        {reducedMotion ? (
+        {session.errorMessage && <p role="alert" className="relative z-10 mt-4 text-sm font-semibold text-cream">{session.errorMessage}</p>}
+
+        {session.status === "ended" && (
+          <div className="relative z-10 mt-4 text-sm leading-relaxed text-cream">
+            <p>{callCopy.thankYou}</p>
+            {publicEnv.bookingSheetUrl && (
+              <a href={publicEnv.bookingSheetUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-semibold text-gold-hi underline decoration-copper underline-offset-4">
+                {callCopy.bookingSheetLink}
+              </a>
+            )}
+          </div>
+        )}
+
+        {(session.status === "connecting" || isActive) && (reducedMotion ? (
           <div role="img" aria-label="Audio waveform idle" className="mt-4 mb-3 h-14 border-y border-dotted border-copper/35" />
         ) : (
           <LiveWaveform
             active={false}
-            processing={session.status !== "ended" && session.status !== "error"}
+            processing
             barColor="#E8C88A"
             barHeight={4 + Math.max(session.inputVolume, session.outputVolume) * 24}
             height={56}
             className="mt-4 mb-3 text-gold-hi"
           />
+        ))}
+
+        {showTranscript && (
+          <div aria-live="polite" aria-label="Call transcript" className="call-dialog__transcript mt-4">
+            {session.transcript.map((entry) => {
+              const speaker = entry.speaker === "agent" ? "Agent" : "Caller";
+              return (
+                <p key={entry.id} className="grid grid-cols-[4.5rem_1fr] gap-2 py-1.5">
+                  <span className="font-semibold uppercase tracking-[0.08em] text-gold-hi">{speaker}</span>
+                  <span><span className="sr-only">{speaker} says: </span>{entry.text}</span>
+                </p>
+              );
+            })}
+            <div ref={transcriptEndRef} aria-hidden="true" />
+          </div>
         )}
 
-        <div aria-live="polite" aria-label="Call transcript" className="call-dialog__transcript">
-          {session.transcript.map((entry) => {
-            const speaker = entry.speaker === "agent" ? "Agent" : "Caller";
-            return (
-              <p key={entry.id} className="grid grid-cols-[4.5rem_1fr] gap-2 py-1.5">
-                <span className="font-semibold uppercase tracking-[0.08em] text-gold-hi">{speaker}</span>
-                <span><span className="sr-only">{speaker} says: </span>{entry.text}</span>
-              </p>
-            );
-          })}
-          <div ref={transcriptEndRef} aria-hidden="true" />
-        </div>
+        {(session.status === "connecting" || isActive) && (
+          <button type="button" onClick={session.end} className="relative z-10 mt-5 w-full border border-copper bg-ink px-4 py-3 font-utility text-xs font-semibold uppercase tracking-[0.14em] text-cream hover:bg-copper hover:text-ink">
+            {callCopy.endCallButton}
+          </button>
+        )}
 
-        <button type="button" onClick={handleEnd} className="relative z-10 mt-5 w-full border border-copper bg-ink px-4 py-3 font-utility text-xs font-semibold uppercase tracking-[0.14em] text-cream hover:bg-copper hover:text-ink">
-          End call
-        </button>
+        {(session.status === "ended" || session.status === "error") && (
+          <button ref={terminalButtonRef} type="button" onClick={closeDialog} className="relative z-10 mt-5 w-full border border-copper bg-ink px-4 py-3 font-utility text-xs font-semibold uppercase tracking-[0.14em] text-cream hover:bg-copper hover:text-ink">
+            {callCopy.closeButton}
+          </button>
+        )}
       </section>
     </dialog>
   );

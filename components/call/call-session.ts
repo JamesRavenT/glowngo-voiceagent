@@ -1,4 +1,5 @@
 export type CallStatus =
+  | "consent"
   | "connecting"
   | "listening"
   | "speaking"
@@ -20,5 +21,7 @@ export interface CallSession {
   inputVolume: number;
   outputVolume: number;
   errorMessage?: string;
+  start(): void;
   end(): void;
+  fail(message: string): void;
 }

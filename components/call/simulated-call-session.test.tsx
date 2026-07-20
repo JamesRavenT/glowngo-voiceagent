@@ -9,6 +9,10 @@ describe("useSimulatedCallSession", () => {
   it("advances through the ordered script and ends at 18 seconds", () => {
     vi.useFakeTimers();
     const { result } = renderHook(() => useSimulatedCallSession());
+    expect(result.current.status).toBe("consent");
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => result.current.start());
+    expect(result.current.status).toBe("connecting");
     act(() => vi.advanceTimersByTime(8000));
     expect(result.current.status).toBe("speaking");
     expect(result.current.transcript.map((entry) => entry.speaker)).toEqual(["agent", "caller", "agent"]);
@@ -24,6 +28,7 @@ describe("useSimulatedCallSession", () => {
   it("cleans up its timer when ended", () => {
     vi.useFakeTimers();
     const { result } = renderHook(() => useSimulatedCallSession());
+    act(() => result.current.start());
     expect(vi.getTimerCount()).toBe(1);
     act(() => result.current.end());
     expect(result.current.status).toBe("ended");

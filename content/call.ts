@@ -1,7 +1,24 @@
+import { voiceAgent } from "./agent";
+
 export const callCopy = {
   simulatedBadge: "Simulated preview — no live agent connected",
+  publicBookingWarning: "Use a made-up name and phone number. Demo bookings appear in a publicly visible sheet.",
+  startCallButton: "Start the call",
+  endCallButton: "End call",
+  closeButton: "Close",
+  thankYou: "Thank you for calling Glow & Go. Keep your booking reference handy.",
+  bookingSheetLink: "Glow & Go Bookings",
   micPermissionError: "Microphone access was blocked. Allow microphone access in your browser settings, then reopen the call.",
   connectionError: "The voice connection could not be established. Check your connection, then reopen the call.",
+  statusLabels: {
+    consent: "Ready to call",
+    connecting: "Connecting",
+    listening: "Listening",
+    speaking: "Speaking",
+    thinking: "Thinking",
+    ended: "Call ended",
+    error: "Call error",
+  },
 } as const;
 
 export const simulatedCallScript = [
@@ -14,4 +31,3 @@ export const simulatedCallScript = [
   { at: 14, status: "speaking", speaker: "agent", text: "Booked. Nova, Tuesday at 1:30, Silver Lake. Your reference is G-G-4-8-2-1." },
   { at: 18, status: "ended" },
 ] as const;
-import { voiceAgent } from "./agent";

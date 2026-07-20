@@ -8,10 +8,11 @@ import { simulatedCallScript } from "@/content";
 const transcriptSteps = simulatedCallScript.filter((step) => "speaker" in step);
 
 export function useSimulatedCallSession(): CallSession {
-  const [status, setStatus] = useState<CallStatus>("connecting");
+  const [status, setStatus] = useState<CallStatus>("consent");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [transcript, setTranscript] = useState<readonly TranscriptEntry[]>([]);
   const [volumes, setVolumes] = useState({ input: 0.01, output: 0.01 });
+  const [errorMessage, setErrorMessage] = useState<string>();
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAtRef = useRef(0);
 
@@ -25,7 +26,18 @@ export function useSimulatedCallSession(): CallSession {
     setStatus("ended");
   }, [clearTimer]);
 
-  useEffect(() => {
+  const fail = useCallback((message: string) => {
+    clearTimer();
+    setStatus("error");
+    setErrorMessage(message);
+  }, [clearTimer]);
+
+  const start = useCallback(() => {
+    clearTimer();
+    setStatus("connecting");
+    setErrorMessage(undefined);
+    setElapsedSeconds(0);
+    setTranscript([]);
     startedAtRef.current = Date.now();
     timerRef.current = setInterval(() => {
       const elapsed = Math.min((Date.now() - startedAtRef.current) / 1000, 18);
@@ -47,9 +59,11 @@ export function useSimulatedCallSession(): CallSession {
       });
       if (elapsed >= 18) clearTimer();
     }, 100);
+  }, [clearTimer]);
 
+  useEffect(() => {
     return clearTimer;
   }, [clearTimer]);
 
-  return { status, transcript, elapsedSeconds, inputVolume: volumes.input, outputVolume: volumes.output, end };
+  return { status, transcript, elapsedSeconds, inputVolume: volumes.input, outputVolume: volumes.output, errorMessage, start, end, fail };
 }
