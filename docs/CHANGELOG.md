@@ -5,6 +5,75 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+Two bodies of work: the **voice agent went live end to end** (2026-07-20), and the earlier
+retarget of the n8n deployment to Google Cloud.
+
+### The agent went live
+
+The booking chain now works from browser to Google Sheets. Getting there meant fixing a deployed
+n8n workflow that was **non-functional in three separate ways** — see
+[v1.0.0-release-checklist.md](v1.0.0-release-checklist.md) for the full record.
+
+#### Added
+- **Consent gate before the call.** The modal opens on a disclosure screen headed "Read this before
+  you call"; the session starts only after the caller clicks through. Gigi no longer says any of it
+  aloud. See [ADR-0006](decisions/0006-consent-gate-carries-the-spoken-disclosure.md).
+- **Ringtone and end sound.** `public/audio/ring.wav` loops while connecting, `end.wav` plays once
+  on hangup. Converted to mono 24 kHz (890 KB → 223 KB, 853 KB → 213 KB); the ringtone loops, so
+  size mattered.
+- **Post-call state** — thank-you plus a "Glow & Go Bookings" link to the sheet. The transcript
+  stays visible beneath it, because the caller may still need to read their booking reference.
+- **Minimize instead of hang up.** Only the explicit End call button ends a call. Escape, backdrop
+  and close minimize while a call is live; the floating button morphs into a pulsating bubble that
+  reopens it. Focus moves to the bubble, so Escape still has a keyboard-reachable destination.
+- **Progressive transcript reveal** for agent messages, paced to text length. A reveal over text
+  that already arrived — the SDK exposes no token-level partials — and visual only, since mutating
+  an `aria-live` region per character makes it unusable with a screen reader.
+- **Sentry error monitoring**, errors only: `tracesSampleRate: 0`, no replay or tracing. Inert
+  without a DSN, and source-map upload is conditional so a missing token cannot fail the build.
+- **Booking tool IDs in the knowledge base.** The agent's webhook tools take machine IDs, but the
+  KB carried only labels. "Blowout & Style" is `blowout`, not `blowout-style` — the agent was
+  guessing, and n8n rejects unknown IDs.
+- **Cloudflare Workers Builds**, so pushes to `main` deploy.
+- [`artifacts/elevenlabs/system-prompt.md`](../artifacts/elevenlabs/system-prompt.md) — the system
+  prompt is now version-controlled. It previously existed only in the ElevenLabs dashboard.
+- Drift test asserting the n8n workflow's hardcoded durations and stylist tables match `content/`.
+
+#### Fixed
+- **The live n8n workflow was inactive**, so every production webhook 404'd.
+- **`create_booking` wrote blank rows** — `Append Booking` had been hand-edited in the n8n UI to
+  `mappingMode: defineBelow` with an empty map. The UI silently flips this when the column panel is
+  opened, and the workflow keeps returning HTTP 200 while writing nothing.
+- **`reschedule_booking` could not find its row** — `matchingColumns` was empty.
+- **An empty bookings sheet returned HTTP 500.** A node emitting zero items halts the chain in n8n,
+  so the Code node never ran. The execution still logged `success`. Fixed with `alwaysOutputData`.
+- **The agent spoke its reasoning aloud**, narrating prompt instructions to callers verbatim.
+- **The agent repeated itself** during silences (`turn_timeout` was 7s). Now 10s, with a two-stage
+  check-in-then-close, ending via the `end_call` tool.
+- **Section headings hid under the fixed navbar.** No `scroll-margin` existed anywhere; every
+  section was affected. The GSAP snap calculation needed the same offset, as it positions panels
+  itself and ignores CSS.
+- **The e2e suite silently changed behaviour based on `.env`.** `test:e2e` builds first, and
+  `NEXT_PUBLIC_*` inline at build time — so a developer with live credentials got a suite that
+  attempted real voice calls. `build:e2e` now pins simulated mode.
+- **Cloudflare CI could not install dependencies** — `pnpm-workspace.yaml` carried
+  `ignoredBuiltDependencies` with no `packages` field. `packageManager` is now pinned so CI and
+  local use the same pnpm.
+
+#### Security
+- **The n8n webhooks were unauthenticated** — anyone with the URL could write to the sheet. Header
+  Auth is now active on all four nodes with the matching header on all four ElevenLabs tools.
+  Verified: authenticated lifecycle passes, unauthenticated returns `403`.
+
+#### Changed
+- Services eyebrow reads "What we offer".
+- Ringtone plays at half volume.
+- `runbook.md` §6 previously advised against an n8n MCP. That was wrong, and the reasoning is
+  recorded rather than deleted — reading live state is precisely what hand-import cannot do, and it
+  is what surfaced all three workflow faults.
+
+### The n8n deployment moved to Google Cloud
+
 Retargeted the **n8n deployment** from Oracle Cloud to **Google Cloud Compute Engine**. No
 application code changed — this is deployment config and docs only. The frontend stays on Cloudflare
 Workers.

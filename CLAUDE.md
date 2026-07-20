@@ -125,6 +125,15 @@ Shipped: **v0.1.3** — Cloudflare Workers deploy target (`docs/plans/v0.1.3.md`
 structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
 `docs/CHANGELOG.md` for what changed.
 
+**Unreleased (deployed, not yet tagged):** the voice agent works end to end — browser → ElevenLabs
+→ authenticated n8n → Google Sheets. Consent gate, ringtone, minimize-instead-of-hangup, progressive
+transcript, Sentry, and CI deploys. `package.json` still reads `0.1.3`; v1.0.0 is not cut until a
+real call is confirmed. See `docs/v1.0.0-release-checklist.md` and ADR-0006.
+
+**The consent gate is load-bearing, not decoration.** It is the only proactive demo disclosure a
+live caller gets — Gigi no longer says it aloud (ADR-0006). Never add a path that auto-starts a call
+and skips it.
+
 **Build gotchas that look like cruft — do not "clean up". All four are load-bearing:**
 
 - **`build` is `next build --webpack`.** Next 16 defaults to Turbopack; the Cloudflare adapter cannot
@@ -137,6 +146,21 @@ structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). Se
   `EPERM` on symlink.
 - **`eslint.config.mjs` must ignore `.open-next/**`** — the explicit `globalIgnores` overrides
   eslint-config-next's defaults.
+- **`pnpm-workspace.yaml` must keep its `packages` field**, and `package.json` its
+  `packageManager` pin. This is not a monorepo; the file exists only to hold
+  `ignoredBuiltDependencies`. Omitting `packages` is legal per pnpm's docs and installs fine
+  locally, but Cloudflare CI fails with `ERROR packages field missing or empty`.
+
+**Deploying:**
+
+- **`pnpm deploy` is not the deploy script.** It is a reserved pnpm workspace command that shadows
+  it and fails with `ERR_PNPM_NOTHING_TO_DEPLOY`. Use **`pnpm run deploy`** — or just push, since
+  Cloudflare Workers Builds deploys `main`.
+- **`wrangler deploy` overwrites dashboard configuration**, including build variables. Prefer
+  letting CI deploy.
+- **A Workers build reports `status: stopped` whether it passed or failed.** Read the logs.
+- **A build that omits `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` silently falls back to simulated mode** —
+  normal-looking site, no error. Check the badge or grep the bundle after deploying.
 
 `NEXT_PUBLIC_*` are inlined at build time, so on Cloudflare they go in **build** variables, never
 Wrangler `vars`. ADR-0005 has the reasoning for all of it.
