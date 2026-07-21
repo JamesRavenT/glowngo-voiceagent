@@ -93,7 +93,7 @@ export function Services() {
       >
         <div
           aria-label="Service categories"
-          className="grid h-full min-h-0 content-center gap-1 lg:relative lg:ml-0 lg:block"
+          className="grid h-full min-h-0 content-start gap-1 lg:relative lg:ml-0 lg:block"
         >
           {servicesByCategory.map(({ category }, categoryIndex) => (
             <ServiceCategoryCard key={category} category={category} categoryIndex={categoryIndex} />
