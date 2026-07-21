@@ -38,7 +38,7 @@ function NavbarLogo() {
       <img
         {...desktopLogo}
         alt={salon.name}
-        className="h-16 w-24 object-contain drop-shadow-[0_1px_8px_rgba(11,10,9,0.9)] md:w-16"
+        className="h-12 w-20 object-contain drop-shadow-[0_1px_8px_rgba(11,10,9,0.9)] md:h-16 md:w-16"
       />
     </picture>
   );
@@ -112,7 +112,7 @@ export function Navbar() {
 
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${heroVisible ? "bg-gradient-to-b from-ink/95 via-ink/80 to-ink/50 backdrop-blur-[2px]" : "border-b border-copper/30 bg-ink/95 backdrop-blur"}`}>
-      <nav aria-label={siteCopy.navigationLabel} className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-6 sm:px-10 lg:px-16">
+      <nav aria-label={siteCopy.navigationLabel} className="mx-auto flex h-16 md:h-20 max-w-screen-2xl items-center justify-between px-6 sm:px-10 lg:px-16">
         <a href="#hero" aria-current={activeSection === "hero" ? "location" : undefined} className="shrink-0">
           <NavbarLogo />
         </a>
