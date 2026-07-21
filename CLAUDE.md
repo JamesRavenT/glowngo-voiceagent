@@ -120,15 +120,14 @@ reliably follow links — keep both in sync when architecture changes.
 
 ## Chunk status
 
-Shipped: **v0.1.3** — Cloudflare Workers deploy target (`docs/plans/v0.1.3.md`, ADR-0005),
+Shipped: **v1.0.0** — first production release: the voice agent works end to end (browser →
+ElevenLabs → authenticated n8n → Google Sheets), with the live-call behaviours confirmed. Consent
+gate, ringtone, minimize-instead-of-hangup, progressive transcript, Sentry, and CI deploys. See
+`docs/v1.0.0-release-checklist.md` and ADR-0006.
+**v0.1.3** — Cloudflare Workers deploy target (`docs/plans/v0.1.3.md`, ADR-0005),
 **v0.1.2** — review fixes (snap, mobile menu, services, FAQ, animations), **v0.1.1** — design and
 structure pass (`docs/plans/v0.1.1.md`), **v0.1.0** (`docs/plans/v0.1.0.md`). See
 `docs/CHANGELOG.md` for what changed.
-
-**Unreleased (deployed, not yet tagged):** the voice agent works end to end — browser → ElevenLabs
-→ authenticated n8n → Google Sheets. Consent gate, ringtone, minimize-instead-of-hangup, progressive
-transcript, Sentry, and CI deploys. `package.json` still reads `0.1.3`; v1.0.0 is not cut until a
-real call is confirmed. See `docs/v1.0.0-release-checklist.md` and ADR-0006.
 
 **The consent gate is load-bearing, not decoration.** It is the only proactive demo disclosure a
 live caller gets — Gigi no longer says it aloud (ADR-0006). Never add a path that auto-starts a call

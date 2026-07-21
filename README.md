@@ -4,7 +4,11 @@
 
 Glow & Go is a portfolio demonstration by **James Raven Tabag**. It presents a fictional Los Angeles salon whose ElevenLabs voice agent can answer questions and book appointments through n8n into Google Sheets.
 
-The salon is fictional and every booking is synthetic. The site ships in **simulated mode**: clicking Call runs a scripted 18-second conversation behind a visible simulation badge, not a live AI. It stays that way until the live-service configuration is supplied.
+The salon is fictional and every booking is synthetic. The production demo runs **live** at
+[glowngo-voiceagentdemo.site](https://glowngo-voiceagentdemo.site) — a real ElevenLabs agent books
+into Google Sheets. A fresh clone with no credentials defaults safely to **simulated mode**:
+clicking Call runs a scripted 18-second conversation behind a visible simulation badge, not a live
+AI.
 
 ## Quick start
 
@@ -78,7 +82,7 @@ walkthrough — including the n8n Docker setup and the security gap to close fir
 - **No transactional lock in Sheets.** Two simultaneous booking requests can both observe a free slot before either writes its row.
 - **Stylists have no individual working patterns.** The model has no days off, shifts, or breaks; all 12 stylists are available during every branch opening hour.
 - **The mock store is not durable.** Its module-level state does not persist reliably across serverless instances because it is a reference implementation, not production storage.
-- **The live voice path is untested.** Playwright cannot drive a real microphone or make deterministic assertions about a live LLM conversation.
+- **The live voice path is not covered by CI.** Playwright cannot drive a real microphone or make deterministic assertions about a live LLM conversation; the live path was verified by manual smoke test for the v1.0.0 release (see [`docs/v1.0.0-release-checklist.md`](docs/v1.0.0-release-checklist.md)).
 
 ## Testing
 

@@ -3,10 +3,13 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] — 2026-07-21
 
-Two bodies of work: the **voice agent went live end to end** (2026-07-20), and the earlier
-retarget of the n8n deployment to Google Cloud.
+First production release. The **voice agent works end to end** — browser → ElevenLabs →
+authenticated n8n → Google Sheets — and the live-call behaviours (a real booking, the silence
+flow, no thinking-aloud) are confirmed against the deployed agent. Two bodies of work land here:
+the voice agent going live (2026-07-20) and the earlier retarget of the n8n deployment to Google
+Cloud.
 
 ### The agent went live
 
