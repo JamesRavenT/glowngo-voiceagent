@@ -8,6 +8,10 @@ const floatingButton = (page: Page) => page
 const dialog = (page: Page) => page.getByRole("dialog", { name: "Glow & Go voice assistant" });
 const minimizedCallButton = (page: Page) => page.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName });
 
+async function revealFloatingButton(page: Page) {
+  await page.locator("#services").scrollIntoViewIfNeeded();
+}
+
 async function startCall(page: Page) {
   await expect(page.getByText(callCopy.statusLabels.consent, { exact: true })).toBeVisible();
   const startButton = page.getByRole("button", { name: callCopy.startCallButton });
@@ -25,6 +29,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("opens from the floating button and ends the call", async ({ page }) => {
+  await revealFloatingButton(page);
   await floatingButton(page).focus();
   await page.keyboard.press("Enter");
   await expect(dialog(page)).toBeVisible();
@@ -49,6 +54,7 @@ test("Escape before starting closes and restores focus to the Contact opener", a
 });
 
 test("Escape during a call minimizes to the focused bubble, which reopens from the keyboard", async ({ page }) => {
+  await revealFloatingButton(page);
   await floatingButton(page).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: callCopy.startCallButton }).click();
@@ -66,6 +72,7 @@ test("Escape during a call minimizes to the focused bubble, which reopens from t
 });
 
 test("scripted transcript and timer advance in order", async ({ page }) => {
+  await revealFloatingButton(page);
   await floatingButton(page).focus();
   await page.keyboard.press("Enter");
   await startCall(page);
@@ -82,6 +89,7 @@ test("scripted transcript and timer advance in order", async ({ page }) => {
 });
 
 test("focus cannot move to controls behind the open modal", async ({ page }) => {
+  await revealFloatingButton(page);
   await floatingButton(page).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: callCopy.startCallButton }).click();

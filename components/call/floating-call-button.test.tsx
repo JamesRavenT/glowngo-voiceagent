@@ -1,9 +1,11 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CallProvider, useCall } from "@/components/call/call-provider";
 import { FloatingCallButton } from "@/components/call/floating-call-button";
 import { callCopy, contactCopy } from "@/content";
+
+let intersectionCallback: IntersectionObserverCallback;
 
 function CallState() {
   const { isMinimized, minimize, source } = useCall();
@@ -21,6 +23,7 @@ function setReducedMotion(matches: boolean) {
 function renderButton() {
   return render(
     <CallProvider>
+      <section id="hero" />
       <FloatingCallButton />
       <CallState />
     </CallProvider>,
@@ -35,12 +38,14 @@ describe("FloatingCallButton", () => {
 
   beforeEach(() => {
     setReducedMotion(false);
-    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
-      callback(0);
-      return 1;
+    vi.stubGlobal("IntersectionObserver", class IntersectionObserverStub {
+      constructor(callback: IntersectionObserverCallback) {
+        intersectionCallback = callback;
+      }
+
+      disconnect() {}
+      observe() {}
     });
-    vi.stubGlobal("cancelAnimationFrame", vi.fn());
-    Object.defineProperty(window, "scrollY", { configurable: true, value: 0, writable: true });
   });
 
   it('opens the call experience with the "floating" source', () => {
@@ -49,18 +54,25 @@ describe("FloatingCallButton", () => {
     expect(screen.getByText("floating")).toBeInTheDocument();
   });
 
-  it("keeps its accessible name when expanded and collapsed", () => {
+  it("uses an icon-only mobile presentation while keeping its accessible name", () => {
     renderButton();
     const button = screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName });
-    expect(button).toHaveAttribute("data-expanded", "true");
-
-    window.scrollY = 100;
-    fireEvent.scroll(window);
-
-    expect(button).toHaveAttribute("data-expanded", "false");
+    expect(button).not.toHaveAttribute("data-expanded");
     expect(button).toHaveAccessibleName(contactCopy.floatingCallButtonAccessibleName);
     expect(button).toHaveTextContent(contactCopy.floatingCallButtonLabel);
-    expect(button.querySelector("[data-visible='false']")).toBeInTheDocument();
+    expect(button.querySelector("[data-visible]")).not.toBeInTheDocument();
+    expect(screen.getByText(contactCopy.floatingCallButtonLabel)).toHaveClass("hidden", "md:inline");
+  });
+
+  it("hides on mobile while the hero is visible and shows after it leaves view", () => {
+    renderButton();
+    const button = screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName });
+    expect(button).toHaveClass("hidden", "md:flex");
+
+    act(() => intersectionCallback([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver));
+
+    expect(button).toHaveClass("flex");
+    expect(button).not.toHaveClass("hidden");
   });
 
   it("disables the heartbeat pulse when reduced motion is preferred", () => {
@@ -80,10 +92,7 @@ describe("FloatingCallButton", () => {
     expect(liveButton).toHaveFocus();
     expect(liveButton).toHaveAttribute("data-live", "true");
     expect(liveButton).not.toHaveAttribute("data-expanded");
-
-    window.scrollY = 100;
-    fireEvent.scroll(window);
-    expect(liveButton).not.toHaveAttribute("data-expanded");
+    expect(liveButton).toHaveClass("flex");
 
     fireEvent.click(liveButton);
     expect(screen.getByText("visible")).toBeInTheDocument();

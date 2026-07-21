@@ -32,6 +32,7 @@ test("keyboard-only users can minimize and reopen a live call, with textual spea
   const callButton = page
     .getByRole("button", { name: "Book now — call Gigi, the Glow & Go voice agent", exact: true })
     .and(page.locator("button.floating-call-button"));
+  await page.locator("#services").scrollIntoViewIfNeeded();
   await callButton.focus();
   await page.keyboard.press("Enter");
   await startCall(page);
