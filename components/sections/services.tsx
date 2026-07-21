@@ -69,7 +69,7 @@ export function Services() {
       id="services"
       data-snap-panel
       aria-labelledby="services-heading"
-      className="relative flex flex-col overflow-hidden border-b border-gold-lo/30 bg-[radial-gradient(ellipse_at_78%_50%,rgb(138_90_43/0.17)_0_1%,transparent_38%)] bg-ink px-5 pb-4 pt-20 sm:px-10 sm:pb-6 sm:pt-24 lg:px-16 lg:py-[7svh]"
+      className="relative flex h-[100svh] flex-col overflow-hidden border-b border-gold-lo/30 bg-[radial-gradient(ellipse_at_78%_50%,rgb(138_90_43/0.17)_0_1%,transparent_38%)] bg-ink px-5 pb-4 pt-20 sm:px-10 sm:pb-6 sm:pt-24 lg:px-16 lg:py-[7svh]"
     >
       <div
         aria-hidden="true"

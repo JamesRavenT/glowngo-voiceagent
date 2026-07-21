@@ -7,7 +7,7 @@ export function About() {
       id="about"
       data-snap-panel
       aria-labelledby="about-heading"
-      className="nocturne-panel border-b border-gold-lo/30 px-5 pb-7 pt-20 sm:px-10 sm:pb-10 sm:pt-24 lg:px-[6vw] lg:py-[10vh]"
+      className="nocturne-panel h-[100svh] border-b border-gold-lo/30 px-5 pb-7 pt-20 sm:px-10 sm:pb-10 sm:pt-24 lg:px-[6vw] lg:py-[10vh]"
     >
       <div className="mx-auto flex h-full max-w-7xl flex-col justify-center gap-5 lg:relative lg:block">
         <div className="about-orbit flex shrink-0 flex-col justify-center lg:absolute lg:left-[3%] lg:top-[10%] lg:h-[72%] lg:w-[45%] lg:px-[4vw] lg:text-center">

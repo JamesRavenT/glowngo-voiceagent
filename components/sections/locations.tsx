@@ -67,7 +67,7 @@ export function Locations() {
       id="locations"
       data-snap-panel
       aria-labelledby="locations-heading"
-      className="relative flex flex-col overflow-hidden border-b border-gold-lo/30 bg-ink px-4 pb-2 pt-20 sm:px-8 sm:pb-4 lg:block lg:px-0 lg:py-0"
+      className="relative flex h-[100svh] flex-col overflow-hidden border-b border-gold-lo/30 bg-ink px-4 pb-2 pt-20 sm:px-8 sm:pb-4 lg:block lg:px-0 lg:py-0"
     >
       <Image
         src="/brand/storefront.png"
