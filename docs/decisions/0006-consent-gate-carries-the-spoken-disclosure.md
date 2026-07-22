@@ -59,7 +59,7 @@ surface that leaked.
 - The system prompt opens with a rule that everything it produces is spoken aloud, listing the
   leaked phrasings above as negative examples. Concrete examples hold better than abstract rules on
   the current model (`gemini-2.5-flash`).
-- The prompt lives in `artifacts/elevenlabs/system-prompt.md` and is version-controlled. Before
+- The prompt lives in `integrations/elevenlabs/system-prompt.md` and is version-controlled. Before
   v1.0.0 it existed only in the ElevenLabs dashboard, where its behaviour was unreviewable and
   would have been lost with the agent.
 - Gigi's greeting is shorter, which is also just better hospitality.

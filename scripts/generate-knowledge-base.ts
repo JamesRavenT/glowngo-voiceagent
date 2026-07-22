@@ -56,5 +56,5 @@ export function generateKnowledgeBase(): string {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  writeFileSync(new URL("../artifacts/knowledge-base.md", import.meta.url), generateKnowledgeBase(), "utf8");
+  writeFileSync(new URL("../integrations/knowledge-base.md", import.meta.url), generateKnowledgeBase(), "utf8");
 }

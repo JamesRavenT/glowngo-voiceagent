@@ -102,7 +102,7 @@ baked into the JavaScript.
 2. Enable the **Google Sheets API**.
 3. Create a **service account**; download its JSON key. This is the only real secret in the system —
    it goes into n8n and nowhere else.
-4. Create a spreadsheet using the columns in `artifacts/google-sheets/schema.md`.
+4. Create a spreadsheet using the columns in `integrations/google-sheets/schema.md`.
 5. **Share the sheet with the service account's email** (it looks like
    `something@project.iam.gserviceaccount.com`). Editor access. Skipping this is the #1 cause of
    "n8n can't write" — the API is enabled but the sheet was never shared.
@@ -162,7 +162,7 @@ Google service account) becomes undecryptable and must be re-entered.
 ### Then
 
 1. Open `https://n8n.yourdomain.com`, create the owner account.
-2. Import `artifacts/n8n/booking.workflow.json` (Workflows → Import from File).
+2. Import `integrations/n8n/booking.workflow.json` (Workflows → Import from File).
 3. Add the **Google Sheets credential** using the service-account JSON.
 4. Replace `<GOOGLE_SHEET_ID>` with your spreadsheet id.
 5. **Activate** the workflow — inactive workflows only expose *test* webhook URLs that fire once.
@@ -174,10 +174,10 @@ Google service account) becomes undecryptable and must be re-entered.
 ## 4. ElevenLabs
 
 1. Create an agent. Record the **agent id** (`agent_...`).
-2. Upload `artifacts/knowledge-base.md` as its knowledge base.
+2. Upload `integrations/knowledge-base.md` as its knowledge base.
    **Re-upload it whenever `content/` changes** — run `pnpm generate:kb` first. A test enforces the
    file matches `content/`, but nothing can force ElevenLabs to have the current copy.
-3. Create the four webhook tools from `artifacts/elevenlabs/*.json`, replacing `<N8N_HOST>` with
+3. Create the four webhook tools from `integrations/elevenlabs/*.json`, replacing `<N8N_HOST>` with
    your real host. Attach all four to the agent.
 4. Give the agent a system prompt that tells it it's a salon receptionist, to use the tools rather
    than guess, and — importantly — **to say it's a demo if asked**. The knowledge base says so, but
@@ -195,7 +195,7 @@ This is a gap in what I built — the tool configs only set `Content-Type`. Fix 
 
 1. In each n8n Webhook node, set **Authentication → Header Auth**, and create a credential with a
    header name and a long random value (n8n webhooks support Basic, Header, or JWT auth).
-2. Add the same header to each `artifacts/elevenlabs/*.json` under
+2. Add the same header to each `integrations/elevenlabs/*.json` under
    `api_schema.request_headers`, alongside `Content-Type`.
 
 ElevenLabs also supports secret/auth connections so the value isn't stored in plaintext in the tool

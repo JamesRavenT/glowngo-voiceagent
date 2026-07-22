@@ -14,7 +14,7 @@ interface WorkflowTable<T extends ParsedTable> {
 }
 
 const workflow = JSON.parse(
-  readFileSync(resolve(process.cwd(), "artifacts/n8n/booking.workflow.json"), "utf8"),
+  readFileSync(resolve(process.cwd(), "integrations/n8n/booking.workflow.json"), "utf8"),
 ) as {
   nodes: Array<{
     name: string;

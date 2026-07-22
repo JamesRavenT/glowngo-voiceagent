@@ -36,7 +36,7 @@ The browser is never in the booking path. In live mode, the Next.js app has no b
 
 `app/api/mock/*` is the reference implementation and executable contract specification for those tools. It supports the simulated demo and tests; it is not a dependency of the live booking path.
 
-`content/` is the single source of truth for salon information. `pnpm generate:kb` generates [`artifacts/knowledge-base.md`](artifacts/knowledge-base.md) from it, keeping the website and agent knowledge aligned.
+`content/` is the single source of truth for salon information. `pnpm generate:kb` generates [`integrations/knowledge-base.md`](integrations/knowledge-base.md) from it, keeping the website and agent knowledge aligned.
 
 ## Going live
 
@@ -44,11 +44,11 @@ Complete these steps in order; each produces a value needed by the next step. Fo
 walkthrough — including the n8n Docker setup and the security gap to close first — see
 [`docs/runbook.md`](docs/runbook.md).
 
-1. **Set up Google Cloud and Sheets.** Create a Google Cloud project, enable the Google Sheets API, and create a service account. Create the bookings spreadsheet using [`artifacts/google-sheets/schema.md`](artifacts/google-sheets/schema.md), then share the sheet with the service account email. Record the spreadsheet ID for n8n. The sheet is publicly linked from the demo, so seed and maintain it with synthetic rows only.
+1. **Set up Google Cloud and Sheets.** Create a Google Cloud project, enable the Google Sheets API, and create a service account. Create the bookings spreadsheet using [`integrations/google-sheets/schema.md`](integrations/google-sheets/schema.md), then share the sheet with the service account email. Record the spreadsheet ID for n8n. The sheet is publicly linked from the demo, so seed and maintain it with synthetic rows only.
 
-2. **Set up n8n.** Run n8n at a public HTTPS URL — the [`deploy/n8n/`](deploy/n8n) stack (n8n + Caddy via Docker Compose) deploys to a Google Cloud Compute Engine e2-micro; [`docs/deployment-google-cloud.md`](docs/deployment-google-cloud.md) is the step-by-step guide. n8n Cloud also works. Import [`artifacts/n8n/booking.workflow.json`](artifacts/n8n/booking.workflow.json), attach the Google Sheets credential, replace `<GOOGLE_SHEET_ID>` with the spreadsheet ID, and activate the workflow. Record the production webhook URLs for `check_availability`, `create_booking`, `reschedule_booking`, and `cancel_booking`.
+2. **Set up n8n.** Run n8n at a public HTTPS URL — the [`deploy/n8n/`](deploy/n8n) stack (n8n + Caddy via Docker Compose) deploys to a Google Cloud Compute Engine e2-micro; [`docs/deployment-google-cloud.md`](docs/deployment-google-cloud.md) is the step-by-step guide. n8n Cloud also works. Import [`integrations/n8n/booking.workflow.json`](integrations/n8n/booking.workflow.json), attach the Google Sheets credential, replace `<GOOGLE_SHEET_ID>` with the spreadsheet ID, and activate the workflow. Record the production webhook URLs for `check_availability`, `create_booking`, `reschedule_booking`, and `cancel_booking`.
 
-3. **Set up ElevenLabs.** Create an ElevenLabs Agent and upload [`artifacts/knowledge-base.md`](artifacts/knowledge-base.md) as its knowledge base. Create the four webhook tools from [`artifacts/elevenlabs/`](artifacts/elevenlabs/), replacing `<N8N_HOST>` with the public n8n host. Connect the tools to the agent and record the agent ID.
+3. **Set up ElevenLabs.** Create an ElevenLabs Agent and upload [`integrations/knowledge-base.md`](integrations/knowledge-base.md) as its knowledge base. Create the four webhook tools from [`integrations/elevenlabs/`](integrations/elevenlabs/), replacing `<N8N_HOST>` with the public n8n host. Connect the tools to the agent and record the agent ID.
 
 4. **Set the public environment variables.** Configure the site host with:
 

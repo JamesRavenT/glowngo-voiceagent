@@ -25,7 +25,7 @@ they point at an n8n that doesn't exist yet. That's expected, not a bug.
 
 1. Sign up at ElevenLabs → create an **Agent**.
 2. Copy its **agent ID** (looks like `agent_xxxxxxxx`).
-3. Upload `artifacts/knowledge-base.md` as the agent's knowledge base.
+3. Upload `integrations/knowledge-base.md` as the agent's knowledge base.
    Run `pnpm generate:kb` first if `content/` has changed since it was last generated.
 4. Give it a system prompt: it's a receptionist for Glow & Go, it uses its tools rather than
    guessing, and **it says it's a demo if asked**.
@@ -70,15 +70,15 @@ Full instructions in [`runbook.md`](runbook.md) §2–§4. The shape of it:
 
 1. **Google Sheets first** — everything downstream needs the spreadsheet ID.
    Cloud console project → enable Sheets API → service account + JSON key → create the sheet from
-   `artifacts/google-sheets/schema.md` → **share the sheet with the service account's email**
+   `integrations/google-sheets/schema.md` → **share the sheet with the service account's email**
    (the #1 cause of "n8n can't write") → also share publicly view-only for
    `NEXT_PUBLIC_BOOKING_SHEET_URL`.
 2. **n8n at a public HTTPS URL** — ElevenLabs' servers call it directly, so `localhost` and
    self-signed certs cannot work. This is the part that needs a VPS and a domain.
-   Import `artifacts/n8n/booking.workflow.json`, add the Sheets credential, replace
+   Import `integrations/n8n/booking.workflow.json`, add the Sheets credential, replace
    `<GOOGLE_SHEET_ID>`, and **activate** it — an inactive workflow only exposes test webhook URLs
    that fire once.
-3. **Wire the tools** — create the four webhook tools from `artifacts/elevenlabs/*.json`, replacing
+3. **Wire the tools** — create the four webhook tools from `integrations/elevenlabs/*.json`, replacing
    `<N8N_HOST>` with your real host, and attach all four to the agent.
 4. Fill in `NEXT_PUBLIC_BOOKING_SHEET_URL` and restart.
 

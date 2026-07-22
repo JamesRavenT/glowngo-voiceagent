@@ -38,7 +38,7 @@ n8n workflow that was **non-functional in three separate ways** — see
   KB carried only labels. "Blowout & Style" is `blowout`, not `blowout-style` — the agent was
   guessing, and n8n rejects unknown IDs.
 - **Cloudflare Workers Builds**, so pushes to `main` deploy.
-- [`artifacts/elevenlabs/system-prompt.md`](../artifacts/elevenlabs/system-prompt.md) — the system
+- [`integrations/elevenlabs/system-prompt.md`](../integrations/elevenlabs/system-prompt.md) — the system
   prompt is now version-controlled. It previously existed only in the ElevenLabs dashboard.
 - Drift test asserting the n8n workflow's hardcoded durations and stylist tables match `content/`.
 

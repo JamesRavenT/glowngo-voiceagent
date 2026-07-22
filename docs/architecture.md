@@ -32,7 +32,7 @@ simulated, so a missing ID can never ship a dead Call button.
 ## Content is the single source of truth
 
 `content/` is typed and invented end to end. `pnpm generate:kb` generates
-`artifacts/knowledge-base.md` from it, which is uploaded to the ElevenLabs agent.
+`integrations/knowledge-base.md` from it, which is uploaded to the ElevenLabs agent.
 
 This is why the site and the agent cannot drift: they are the same data. It also means **changing
 `content/` changes what the agent knows**. A field added for the UI's benefit (service categories,

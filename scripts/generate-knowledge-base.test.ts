@@ -22,7 +22,7 @@ describe("generated knowledge base", () => {
   });
 
   it("matches the committed artifact byte-for-byte", () => {
-    const committed = readFileSync(resolve(process.cwd(), "artifacts/knowledge-base.md"), "utf8");
+    const committed = readFileSync(resolve(process.cwd(), "integrations/knowledge-base.md"), "utf8");
     expect(generateKnowledgeBase()).toBe(committed);
   });
 });
