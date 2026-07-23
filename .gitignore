@@ -55,6 +55,12 @@ cloudflare-env.d.ts
 *.tsbuildinfo
 next-env.d.ts
 
-# audio masters — converted copies live in public/audio/
-/Ring.wav
-/End.wav
+# audio masters (source; converted copies live in public/audio/) — local only
+/assets/audio/
+
+# local AI agent tooling
+/.claude/
+/.agents/
+
+# logs
+*.log

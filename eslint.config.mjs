@@ -15,6 +15,11 @@ const eslintConfig = defineConfig([
     // Cloudflare build and local state outputs:
     ".open-next/**",
     ".wrangler/**",
+    // Test report/artifact outputs:
+    "allure-results/**",
+    "allure-report/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

@@ -5,17 +5,36 @@ Project documentation for **Glow & Go**, a portfolio demonstration by James Rave
 New to the project? Read [requirements](requirements.md) → [architecture](architecture.md) →
 [design](design.md), in that order. Each is short.
 
+## How-to guides
+
 | Document | What it answers |
 |---|---|
-| [requirements.md](requirements.md) | What this is, what it must do, what's locked, what stack it uses. |
-| [architecture.md](architecture.md) | How the pieces fit and why the browser isn't in the booking path. |
-| [design.md](design.md) | Brand, tokens, motion, layout rules. |
-| [setup-checklist.md](setup-checklist.md) | Short path: what to create and what goes in `.env.local` to test the agent. |
+| [setup-checklist.md](setup-checklist.md) | Short path: what to create and what goes in `.env` to test the agent. |
 | [runbook.md](runbook.md) | Operational guide for taking the demo live (keys, n8n, Sheets). |
-| [v1.0.0-release-checklist.md](v1.0.0-release-checklist.md) | What was verified against live n8n, and the manual steps still outstanding. |
+| [deployment-google-cloud.md](deployment-google-cloud.md) | Deploy n8n and Caddy to a Google Cloud VM. |
+
+## Reference
+
+| Document | What it answers |
+|---|---|
+| [architecture.md](architecture.md) | How the pieces fit and why the browser isn't in the booking path. |
 | [CHANGELOG.md](CHANGELOG.md) | What changed in each release. |
-| [plans/](plans/) | Implementation plan per release. |
+| [Google Sheets schema](../integrations/google-sheets/schema.md) | Columns and data rules for the synthetic bookings sheet. |
+
+## Explanation
+
+| Document | What it answers |
+|---|---|
+| [requirements.md](requirements.md) | What this is, what it must do, what's locked, and what stack it uses. |
+| [design.md](design.md) | Brand, tokens, motion, and layout rules. |
 | [decisions/](decisions/) | Architecture decision records — why we chose what we chose. |
+
+## Project history
+
+| Document | What it records |
+|---|---|
+| [v1.0.0-release-checklist.md](v1.0.0-release-checklist.md) | What was verified against live n8n, and the manual steps still outstanding. |
+| [plans/](plans/) | Implementation plan per release. |
 
 ## Where docs live and why
 

@@ -7,6 +7,9 @@ specifics, the exact env placement, and the decisions you'll hit.
 configuration — nothing below is required to ship it as a portfolio piece. This is only for making
 the agent real.
 
+Live calls use the browser microphone, and a visible consent gate presents the privacy disclosure
+before any call connects.
+
 | | |
 |---|---|
 | Live | <https://glowngo-voiceagentdemo.site> |

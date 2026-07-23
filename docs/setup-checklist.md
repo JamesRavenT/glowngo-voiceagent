@@ -1,8 +1,8 @@
 # Setup checklist — testing the voice agent
 
-What **you** need to create, and what goes in `.env.local`. This is the short path.
-[`runbook.md`](runbook.md) has the full detail (Docker compose, Caddy, failure modes) — go there
-when a step below needs more than a sentence.
+What **you** need to create, and what goes in `.env`. This is the short path.
+For the canonical deep how-to (Docker Compose, Caddy, and failure modes), see
+[`runbook.md`](runbook.md).
 
 ## The key point first
 
@@ -30,7 +30,7 @@ they point at an n8n that doesn't exist yet. That's expected, not a bug.
 4. Give it a system prompt: it's a receptionist for Glow & Go, it uses its tools rather than
    guessing, and **it says it's a demo if asked**.
 
-### 2. Create `.env.local`
+### 2. Create `.env`
 
 In the repo root (it's gitignored — never commit it):
 
