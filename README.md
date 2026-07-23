@@ -86,6 +86,9 @@ walkthrough — including the n8n Docker setup and the security gap to close fir
 
 ## Testing
 
+`pnpm test:e2e` writes fresh Allure results to `allure-results/`. Run
+`pnpm test:e2e:report` to execute the suite, build the HTML report, and open it locally.
+
 `pnpm test:e2e` builds the production app and runs the Playwright gate in desktop and mobile Chromium projects. It verifies page structure and navigation, responsive floating-call behavior, keyboard and focus accessibility, the always-visible simulated-mode badge, deterministic transcript timing, and the mock booking webhook contracts—including reference-code requirements and malformed-request handling.
 
 The gate deliberately runs in simulated mode. It does not assert microphone permissions, WebRTC connectivity, ElevenLabs model behavior, n8n availability, Google credentials, or live writes to Sheets. Those external integrations require a manual smoke test after the going-live wiring is complete.

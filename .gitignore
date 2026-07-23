@@ -12,6 +12,8 @@
 !.yarn/versions
 
 # testing
+/allure-results
+/allure-report
 /coverage
 /test-results
 /playwright-report

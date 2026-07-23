@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Added Allure reporting to the Playwright suite: `test:e2e` emits fresh `allure-results`, and `test:e2e:report` builds and opens the HTML report.
+
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

@@ -7,8 +7,9 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI
-    ? [["github"], ["html", { open: "never" }]]
-    : [["list"], ["html", { open: "never" }]],
+    ? [["github"], ["html", { open: "never" }], ["allure-playwright"]]
+    : [["list"], ["html", { open: "never" }], ["allure-playwright"]],
+  globalSetup: "./scripts/allure-clean.mjs",
   use: {
     baseURL: "http://127.0.0.1:3000",
     contextOptions: { reducedMotion: "reduce" },
