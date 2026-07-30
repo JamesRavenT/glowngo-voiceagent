@@ -14,8 +14,8 @@ export function Contact({ bookingSheetUrl = publicEnv.bookingSheetUrl }: { booki
   const heading = siteCopy.sections.find((section) => section.id === "contact")!.heading;
 
   return (
-    <Section id="contact" aria-labelledby="contact-heading" className="nocturne-panel min-h-0 flex-1 overflow-hidden border-b border-gold-lo/30 px-5 pb-3 pt-[4.5rem] sm:px-10 sm:pb-5 sm:pt-24 lg:px-[6vw] lg:py-[7vh]">
-      <div className="mx-auto grid h-full max-w-7xl content-center gap-3 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:gap-[8vw]">
+    <Section id="contact" aria-labelledby="contact-heading" className="nocturne-panel overflow-hidden border-b border-gold-lo/30 px-5 pb-3 pt-[4.5rem] sm:px-10 sm:pb-5 sm:pt-24 lg:px-[6vw] lg:py-[7vh]">
+      <div className="mx-auto grid max-w-7xl content-center gap-3 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:gap-[8vw]">
         <div className="text-center lg:text-left">
           <p className="font-utility text-[0.62rem] uppercase tracking-[0.22em] text-copper">{contactCopy.eyebrow}</p>
           <h2 id="contact-heading" className="mt-1 font-display text-[3.5rem] font-normal leading-[0.82] tracking-[-0.05em] text-cream sm:text-7xl lg:text-[clamp(5rem,10vw,9rem)]">{heading}</h2>

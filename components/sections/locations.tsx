@@ -65,9 +65,8 @@ export function Locations() {
   return (
     <Section
       id="locations"
-      data-snap-panel
       aria-labelledby="locations-heading"
-      className="relative flex h-[100svh] flex-col overflow-hidden border-b border-gold-lo/30 bg-ink px-4 pb-2 pt-20 sm:px-8 sm:pb-4 lg:block lg:px-0 lg:py-0"
+      className="relative flex min-h-[100svh] flex-col overflow-hidden border-b border-gold-lo/30 bg-ink px-4 pb-2 pt-20 sm:px-8 sm:pb-4 lg:block lg:px-0 lg:py-0"
     >
       <Image
         src="/brand/storefront.png"
@@ -98,12 +97,12 @@ export function Locations() {
         </h2>
       </header>
 
-      <div className="relative z-10 mt-1 grid min-h-0 flex-1 grid-rows-4 lg:absolute lg:bottom-[8svh] lg:right-[5vw] lg:top-[14svh] lg:mt-0 lg:w-[52vw] lg:grid-cols-2 lg:grid-rows-2 lg:gap-3">
+      <div className="relative z-10 mt-1 grid flex-1 lg:absolute lg:bottom-[8svh] lg:right-[5vw] lg:top-[14svh] lg:mt-0 lg:min-h-0 lg:w-[52vw] lg:grid-cols-2 lg:grid-rows-2 lg:gap-3">
         {branches.map((branch) => (
           <article
             key={branch.id}
             data-branch-id={branch.id}
-            className="grid min-h-0 grid-cols-[1.08fr_0.92fr] grid-rows-[auto_auto] content-center gap-x-3 border-t border-gold-lo/70 bg-ink/75 px-3 py-1.5 text-left first:border-t-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:border lg:border-gold-lo/60 lg:bg-ink/80 lg:px-8 lg:py-5 lg:text-center lg:shadow-[0_0_3rem_rgb(138_90_43/0.14)] lg:[border-radius:50%/18%] lg:first:border-t"
+            className="grid grid-cols-[1.08fr_0.92fr] grid-rows-[auto_auto] content-center gap-x-3 border-t border-gold-lo/70 bg-ink/75 px-3 py-1.5 text-left first:border-t-0 lg:flex lg:min-h-0 lg:flex-col lg:items-center lg:justify-center lg:border lg:border-gold-lo/60 lg:bg-ink/80 lg:px-8 lg:py-5 lg:text-center lg:shadow-[0_0_3rem_rgb(138_90_43/0.14)] lg:[border-radius:50%/18%] lg:first:border-t"
           >
             <h3 className="self-end font-display text-[1.15rem] font-medium leading-none tracking-[-0.03em] text-cream sm:text-2xl lg:self-auto lg:text-[clamp(1.6rem,2.2vw,2.25rem)]">
               {branch.name}

@@ -2,8 +2,6 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-export const SECTION_SCROLL_OFFSET_PX = 0;
-
 type SectionProps = Omit<ComponentPropsWithoutRef<"section">, "id"> & {
   id: string;
   heading?: string;

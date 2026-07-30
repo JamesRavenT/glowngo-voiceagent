@@ -8,7 +8,6 @@ export function Hero() {
   return (
     <Section
       id="hero"
-      data-snap-panel
       aria-labelledby="hero-heading"
       className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink px-6 pb-[clamp(4rem,10svh,7rem)] sm:px-10 lg:px-16"
     >

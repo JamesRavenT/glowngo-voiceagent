@@ -7,10 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { salon, siteCopy } from "@/content/salon";
-import {
-  SECTION_SNAP_LAND_EVENT,
-  type SectionSnapLandDetail,
-} from "@/lib/section-snap-events";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 const navigationLinks = siteCopy.sections.filter((section) => section.id !== "hero");
@@ -53,29 +49,26 @@ export function Navbar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const handleSectionSnapLand = (event: Event) => {
-      setActiveSection((event as CustomEvent<SectionSnapLandDetail>).detail.id);
-    };
     const sections = siteCopy.sections
       .map(({ id }) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null);
     const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActiveSection(visible[0].target.id);
-        const heroEntry = entries.find((entry) => entry.target.id === "hero");
-        if (heroEntry) setHeroVisible(heroEntry.isIntersecting);
+      () => {
+        const activationY = window.innerHeight * 0.12;
+        const active = sections.find((section) => {
+          const bounds = section.getBoundingClientRect();
+          return bounds.top <= activationY && bounds.bottom > activationY;
+        });
+
+        if (active) {
+          setActiveSection(active.id);
+          setHeroVisible(active.id === "hero");
+        }
       },
-      { rootMargin: "-72px 0px -55%", threshold: [0, 0.15, 0.5] },
+      { rootMargin: "-12% 0px -87%", threshold: 0 },
     );
     sections.forEach((section) => observer.observe(section));
-    window.addEventListener(SECTION_SNAP_LAND_EVENT, handleSectionSnapLand);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener(SECTION_SNAP_LAND_EVENT, handleSectionSnapLand);
-    };
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -108,7 +101,10 @@ export function Navbar() {
     };
   }, [menuOpen]);
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    document.body.style.overflow = "";
+    setMenuOpen(false);
+  };
 
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${heroVisible ? "bg-gradient-to-b from-ink/95 via-ink/80 to-ink/50 backdrop-blur-[2px]" : "border-b border-copper/30 bg-ink/95 backdrop-blur"}`}>

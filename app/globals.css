@@ -46,15 +46,12 @@
 
 @layer base {
   * { @apply border-border; }
-  html { @apply bg-ink font-body text-cream; }
+  html {
+    scroll-behavior: smooth;
+    @apply bg-ink font-body text-cream;
+  }
   body { @apply bg-background text-foreground; }
   :focus-visible { @apply outline-2 outline-offset-4 outline-gold-hi; }
-  [data-snap-panel] {
-    height: 100svh;
-    min-height: 100svh;
-    max-height: 100svh;
-    overflow: hidden;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

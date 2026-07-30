@@ -26,7 +26,7 @@ function ServiceCategoryCard({
   return (
     <article
       aria-labelledby={`services-${categoryIndex}-heading`}
-      className={`flex min-h-0 flex-col justify-center border border-gold-lo/60 bg-ink/95 px-4 py-1.5 text-center shadow-[0_0_3rem_rgb(138_90_43/0.12)] [border-radius:45%/10%] lg:absolute lg:px-[3vw] lg:py-[3svh] lg:[border-radius:50%] ${categoryOrbitClasses[categoryIndex]}`}
+      className={`flex flex-col justify-center border border-gold-lo/60 bg-ink/95 px-4 py-1.5 text-center shadow-[0_0_3rem_rgb(138_90_43/0.12)] [border-radius:45%/10%] lg:absolute lg:min-h-0 lg:px-[3vw] lg:py-[3svh] lg:[border-radius:50%] ${categoryOrbitClasses[categoryIndex]}`}
     >
       <h3
         id={`services-${categoryIndex}-heading`}
@@ -67,9 +67,8 @@ export function Services() {
   return (
     <Section
       id="services"
-      data-snap-panel
       aria-labelledby="services-heading"
-      className="relative flex h-[100svh] flex-col overflow-hidden border-b border-gold-lo/30 bg-[radial-gradient(ellipse_at_78%_50%,rgb(138_90_43/0.17)_0_1%,transparent_38%)] bg-ink px-5 pb-4 pt-20 sm:px-10 sm:pb-6 sm:pt-24 lg:px-16 lg:pt-[10svh] lg:pb-[4svh]"
+      className="relative flex min-h-[100svh] flex-col overflow-hidden border-b border-gold-lo/30 bg-[radial-gradient(ellipse_at_78%_50%,rgb(138_90_43/0.17)_0_1%,transparent_38%)] bg-ink px-5 pb-4 pt-20 sm:px-10 sm:pb-6 sm:pt-24 lg:px-16 lg:pt-[10svh] lg:pb-[4svh]"
     >
       <div
         aria-hidden="true"
@@ -89,11 +88,11 @@ export function Services() {
       </header>
 
       <div
-        className="relative z-10 mx-auto mt-2 flex min-h-0 w-full max-w-7xl flex-1 flex-col lg:mt-[2svh] lg:block lg:h-[64svh] lg:max-h-[36rem] lg:flex-none"
+        className="relative z-10 mx-auto mt-2 flex w-full max-w-7xl flex-1 flex-col lg:mt-[2svh] lg:block lg:h-[64svh] lg:max-h-[36rem] lg:min-h-0 lg:flex-none"
       >
         <div
           aria-label="Service categories"
-          className="grid h-full min-h-0 content-start gap-1 lg:relative lg:ml-0 lg:block"
+          className="grid flex-1 content-start gap-1 lg:relative lg:ml-0 lg:block lg:min-h-0"
         >
           {servicesByCategory.map(({ category }, categoryIndex) => (
             <ServiceCategoryCard key={category} category={category} categoryIndex={categoryIndex} />

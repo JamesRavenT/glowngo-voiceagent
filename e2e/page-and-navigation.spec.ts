@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("sections render in the intended order and the disclaimer is visible", async ({ page }) => {
-  const sectionIds = await page.locator("main > section, main > [data-snap-panel] > section").evaluateAll((sections) =>
+  const sectionIds = await page.locator("main > section, main > div > section").evaluateAll((sections) =>
     sections.map((section) => section.id),
   );
   expect(sectionIds).toEqual(["hero", "about", "services", "locations", "faq", "contact"]);
