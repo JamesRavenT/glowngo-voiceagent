@@ -48,7 +48,7 @@ Agreed with James. Do not silently revisit these.
 | Layer | Choice |
 |---|---|
 | Frontend | Next.js (App Router), TypeScript, Tailwind, shadcn/ui, Lucide |
-| Animation | Motion for React (component-level); GSAP + ScrollTrigger (section snapping — [ADR 0001](decisions/0001-gsap-for-section-snapping.md)) |
+| Animation | Motion for React (component-level). Page scroll is native — GSAP was removed with section snapping ([ADR 0007](decisions/0007-normal-scrolling-replaces-section-snapping.md)) |
 | Carousel | Embla via shadcn ([ADR 0002](decisions/0002-embla-for-carousels.md)) |
 | Voice | ElevenLabs Agents, `@elevenlabs/react`, browser mic over WebRTC |
 | Agent UI | ElevenLabs UI (shadcn-native): `orb`, `live-waveform`, `transcript-viewer` |

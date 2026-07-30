@@ -1,6 +1,11 @@
 # 0001 — GSAP ScrollTrigger for section snapping
 
-**Status:** Accepted (v0.1.1) · **Date:** 2026-07-16
+**Status:** Superseded by [ADR 0007](0007-normal-scrolling-replaces-section-snapping.md) (2026-07-30)
+· Accepted (v0.1.1) · **Date:** 2026-07-16
+
+> Section snapping was removed and GSAP dropped from the dependency tree. The page scrolls normally.
+> This ADR is kept for the reasoning behind the original choice. See
+> [ADR 0007](0007-normal-scrolling-replaces-section-snapping.md) for why it was reversed.
 
 ## Context
 

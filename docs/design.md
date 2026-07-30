@@ -54,12 +54,15 @@ The one real crop is `Location.png` → `storefront.png`, produced reproducibly 
 
 | Behavior | Spec |
 |---|---|
-| Section snap | GSAP ScrollTrigger, `duration: { min: 0.7, max: 1.4 }`, `ease: "power2.inOut"`, directional |
+| Page scroll | Normal browser scrolling. Nothing intercepts wheel, touch, or key events |
+| Anchor navigation | Native `html { scroll-behavior: smooth }` |
 | Component motion | Motion for React |
-| Reduced motion | `prefers-reduced-motion` disables snapping entirely and falls back to normal scroll |
+| Reduced motion | `prefers-reduced-motion` resets `scroll-behavior` to `auto` |
 
-Snapping is deliberately *slow*. The browser's native scroll-snap was rejected because it gives no
-control over duration and felt too abrupt.
+Section snapping was removed along with GSAP
+([ADR 0007](decisions/0007-normal-scrolling-replaces-section-snapping.md)). Scroll hijacking fought
+the user's own scrolling habits, and the engine required every scroll-adjacent feature to be written
+twice.
 
 ## Layout
 
@@ -67,8 +70,10 @@ control over duration and felt too abrupt.
 
 FAQ precedes Contact so objections are answered before the ask.
 
-**Panels.** Every section is one viewport tall. The exception is the final panel, where Contact and
-the Footer share a single screen.
+**Panels.** Every section is *at least* one viewport tall (`min-height: 100svh`) and grows with its
+content. Contact and the Footer share the last screen. Each section must declare its own
+`overflow-hidden` — the decorative orbits are positioned to bleed off the right edge, and an
+unclipped one widens the whole document.
 
 | Section | Desktop | Mobile |
 |---|---|---|
@@ -114,5 +119,5 @@ Not a finishing pass — a constraint.
 - Visible label and accessible name may differ where the visible text is short for design reasons.
   The floating button reads "Book Now" but announces "Book now — call the salon voice agent", because
   a screen-reader user deserves to know a microphone is about to open.
-- Snap scrolling must never trap keyboard navigation.
+- Scrolling must never trap keyboard navigation. Nothing intercepts key events.
 - `prefers-reduced-motion` is honored throughout.

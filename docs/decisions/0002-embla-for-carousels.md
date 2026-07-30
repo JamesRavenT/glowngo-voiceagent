@@ -47,6 +47,11 @@ the heavier one.
 
 Secondary: CSS scroll-snap has no mouse-drag on desktop. Embla does.
 
+> **Update (2026-07-30):** vertical page snapping and GSAP were removed
+> ([ADR 0007](0007-normal-scrolling-replaces-section-snapping.md)), so the nested-scroll conflict
+> above no longer exists. The decision stands on its remaining merits — mouse-drag on desktop, and
+> shadcn's vendored keyboard and focus handling.
+
 ## Why shadcn's wrapper rather than `embla-carousel-react` directly
 
 Embla's core has **no keyboard navigation or focus management** — that needs the separate
@@ -57,7 +62,8 @@ so we get accessibility parity without a second package. shadcn is already confi
 
 - One new runtime dependency (Embla; no transitive runtime deps of its own).
 - The carousel component is vendored into `components/ui/`, so it is ours to restyle.
-- Carousel and page-snap interaction on touch devices needs a real device check, not just emulation.
+- Carousel touch behavior needs a real device check, not just emulation. (The page-snap half of this
+  concern is moot since [ADR 0007](0007-normal-scrolling-replaces-section-snapping.md).)
 
 ## Unverified
 

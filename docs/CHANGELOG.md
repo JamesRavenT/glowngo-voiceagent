@@ -6,6 +6,32 @@
 
 - Added Allure reporting to the Playwright suite: `test:e2e` emits fresh `allure-results`, and `test:e2e:report` builds and opens the HTML report.
 
+### Changed
+
+- **The page scrolls normally.** Section snapping is gone
+  ([ADR 0007](decisions/0007-normal-scrolling-replaces-section-snapping.md), superseding
+  [ADR 0001](decisions/0001-gsap-for-section-snapping.md)). Nothing intercepts wheel, touch, or key
+  events any more; anchor links use native `scroll-behavior: smooth`, still reset to `auto` under
+  `prefers-reduced-motion`.
+- Sections moved from a hard `height`/`max-height: 100svh` clamp to `min-height: 100svh`, so they
+  still fill the viewport but grow with their content instead of clipping it on short screens.
+- The navbar's active-section highlight now comes from a scroll-position spy alone. The
+  `sectionsnap:land` custom event that kept it in sync with the snap animation is gone.
+
+### Removed
+
+- `gsap` and `@gsap/react`. Nothing else in the codebase used them.
+- `components/layout/section-snap.tsx` (362 lines of gesture interception, cooldowns, and boundary
+  locking), its unit test, and `lib/section-snap-events.ts`.
+
+### Fixed
+
+- `about` and `faq` now declare their own `overflow-hidden`. They had been relying on the deleted
+  `[data-snap-panel]` rule for it, and without it their decorative `.nocturne-panel::before` orbit
+  widened the document to 594px inside a 390px viewport — which made mobile Chrome zoom out and
+  desynchronized hit-testing from layout. See ADR 0007 for the full failure mode; it presented as a
+  layout overlap, but the vertical geometry was correct throughout.
+
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

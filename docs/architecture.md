@@ -59,14 +59,23 @@ documented shape on its own.
 
 ## Layout and scroll
 
-As of v0.1.1 the page is a **snap-scrolled sequence of full-height panels** driven by GSAP
-ScrollTrigger ([ADR 0001](decisions/0001-gsap-for-section-snapping.md)). Every section occupies one
-viewport, except the final panel, which shares one screen between Contact and the Footer.
+The page **scrolls normally**. Section snapping and GSAP were removed
+([ADR 0007](decisions/0007-normal-scrolling-replaces-section-snapping.md), superseding
+[ADR 0001](decisions/0001-gsap-for-section-snapping.md)).
 
-Two things depend on scroll position and must keep working alongside the snap: the navbar's
-IntersectionObserver active-section highlighting, and the floating call button's
-collapse-on-scroll-down behavior. Snapping tweens the real scroll position rather than hijacking it,
-so both continue to observe normally.
+Each section uses `min-height: 100svh`, so it fills the viewport when its content is shorter and
+grows when the content is taller. There is no height clamp and nothing intercepts wheel, touch, or
+key events. Anchor navigation is native `scroll-behavior: smooth`, reset to `auto` under
+`prefers-reduced-motion`.
+
+Two things still depend on scroll position: the navbar's active-section highlighting and the
+floating call button's collapse-on-scroll-down behavior. Both now read the real scroll position with
+nothing in between.
+
+**Every section must clip its own horizontal overflow.** The deleted panel rule used to do this for
+all of them, and the decorative `.nocturne-panel::before` orbit is positioned to bleed off the right
+edge. A section that omits `overflow-hidden` widens the document, which makes mobile browsers zoom
+out and desynchronizes hit-testing from layout. ADR 0007 has the full failure mode.
 
 ## Testing boundary
 
