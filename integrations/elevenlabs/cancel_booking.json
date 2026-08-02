@@ -15,5 +15,6 @@
     },
     "request_headers": [{ "type": "value", "name": "Content-Type", "value": "application/json" }]
   },
+  "tool_error_handling_mode": "passthrough",
   "response_timeout_secs": 30
 }

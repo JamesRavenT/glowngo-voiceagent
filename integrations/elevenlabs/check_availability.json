@@ -19,9 +19,10 @@
     "request_headers": [{ "type": "value", "name": "Content-Type", "value": "application/json" }],
     "response_filter": {
       "mode": "allow",
-      "filters": ["slots.0", "slots.1", "slots.2", "slots.3", "slots.4", "slots.5", "slots.6", "slots.7", "slots.8", "slots.9"],
+      "filters": ["slots.0", "slots.1", "slots.2", "slots.3", "slots.4", "slots.5", "slots.6", "slots.7", "slots.8", "slots.9", "error"],
       "content_type": "application/json"
     }
   },
+  "tool_error_handling_mode": "passthrough",
   "response_timeout_secs": 30
 }
