@@ -1,5 +1,15 @@
 import { defineConfig } from "@playwright/test";
 
+const e2ePort = Number(process.env.E2E_PORT ?? "3000");
+
+if (!Number.isInteger(e2ePort) || e2ePort < 1 || e2ePort > 65_535) {
+  throw new Error(
+    `Invalid E2E_PORT "${process.env.E2E_PORT}": expected an integer between 1 and 65535.`,
+  );
+}
+
+const e2eBaseUrl = `http://127.0.0.1:${e2ePort}`;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -11,7 +21,7 @@ export default defineConfig({
     : [["list"], ["html", { open: "never" }], ["allure-playwright"]],
   globalSetup: "./scripts/allure-clean.mjs",
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: e2eBaseUrl,
     contextOptions: { reducedMotion: "reduce" },
     trace: "on-first-retry",
   },
@@ -31,8 +41,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "node node_modules/next/dist/bin/next start",
-    url: "http://127.0.0.1:3000",
+    command: `node node_modules/next/dist/bin/next start --port ${e2ePort} --hostname 127.0.0.1`,
+    url: e2eBaseUrl,
     reuseExistingServer: false,
     timeout: 120_000,
   },
