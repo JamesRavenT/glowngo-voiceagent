@@ -31,6 +31,24 @@
   widened the document to 594px inside a 390px viewport — which made mobile Chrome zoom out and
   desynchronized hit-testing from layout. See ADR 0007 for the full failure mode; it presented as a
   layout overlap, but the vertical geometry was correct throughout.
+- **Gigi answers once and stops.** Her three-node ElevenLabs workflow is gone
+  ([ADR 0008](decisions/0008-gigi-runs-on-one-system-prompt.md)); she runs on her system prompt
+  alone. An LLM edge condition was transitioning mid-answer into a second node whose
+  `entry_behavior: auto` made it speak on entry, so one question drew two replies — the second
+  volunteering the whole service catalogue. The node prompts also contradicted the system prompt,
+  telling her to re-greet and to hand off to human staff that a fictional salon does not have.
+- **The minimized call button no longer loops its shrink animation.** It carried Motion's `layout`
+  projection and an infinitely repeating `scale`/`boxShadow` `animate` on the same element, so every
+  pulse cycle re-triggered a layout measurement and restarted the animation. The live-call pulse is
+  now a button-level CSS box-shadow keyframe alongside the existing `floating-call-heartbeat`; an
+  element's own box-shadow escapes its `overflow-hidden`, and a CSS animation does not drive the
+  layout projection.
+- **`eleven_v3` audio tags no longer render in the transcript.** `[warmly]`, `[supportive]` and the
+  rest are authored into the prompt on purpose to drive TTS expressiveness, so the SDK delivers them
+  in the message text. They are stripped in `mapElevenLabsMessage` — the single boundary where an SDK
+  message becomes a `TranscriptEntry` — so the visible transcript, the `sr-only` list, and the
+  progressive-reveal maths all agree. Tag-only messages are dropped rather than rendered blank. The
+  tags are still sent to and spoken by the agent.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
