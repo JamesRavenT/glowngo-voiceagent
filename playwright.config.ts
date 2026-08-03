@@ -18,6 +18,9 @@ if (!Number.isInteger(e2ePort) || e2ePort < 1 || e2ePort > 65_535) {
 const e2eBaseUrl = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
+  grepInvert: process.env.E2E_INCLUDE_DEPLOYMENT === "1"
+    ? /@manual|@visual/
+    : /@manual|@visual|@deployment/,
   fullyParallel: false,
   workers: 2,
   forbidOnly: Boolean(process.env.CI),
@@ -63,7 +66,7 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
+  webServer: process.env.E2E_SKIP_WEBSERVER === "1" ? undefined : {
     command: `node node_modules/next/dist/bin/next start --port ${e2ePort} --hostname 127.0.0.1`,
     url: e2eBaseUrl,
     reuseExistingServer: false,

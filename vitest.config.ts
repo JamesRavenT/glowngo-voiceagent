@@ -11,7 +11,15 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    exclude: ["e2e/**", "node_modules/**", ".next/**"],
+    exclude: [
+      "e2e/**",
+      "node_modules/**",
+      ".next/**",
+      ".next-live-security/**",
+      ".features-gen/**",
+      ".open-next/**",
+      ".wrangler/**",
+    ],
     setupFiles: ["./vitest.setup.ts"],
   },
 });

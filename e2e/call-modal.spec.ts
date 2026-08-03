@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("opens from the floating button and ends the call", async ({ page }) => {
+test("opens from the floating button and ends the call", { tag: "@smoke" }, async ({ page }) => {
   await revealFloatingButton(page);
   await floatingButton(page).focus();
   await page.keyboard.press("Enter");
@@ -38,6 +38,7 @@ test("opens from the floating button and ends the call", async ({ page }) => {
   await page.getByRole("button", { name: callCopy.endCallButton }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText(callCopy.statusLabels.ended)).toBeVisible();
+  await expect(page.getByText(callCopy.thankYou, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: callCopy.closeButton, exact: true }).last().click();
   await expect(dialog(page)).toBeHidden();
   await expect(floatingButton(page)).toBeFocused();
