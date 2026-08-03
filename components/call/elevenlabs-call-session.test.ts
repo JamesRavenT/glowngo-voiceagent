@@ -23,6 +23,30 @@ describe("ElevenLabs session mappings", () => {
     expect(mapElevenLabsMessage({ message: "Hi", role: "user" }, 2, 1).speaker).toBe("caller");
   });
 
+  it("strips ElevenLabs audio tags while mapping an agent message", () => {
+    expect(mapElevenLabsMessage({
+      message: "[warmly] Thanks for calling Glow and Go.",
+      source: "ai",
+      event_id: 1,
+    }, 3.25, 0)).toEqual({
+      id: "live-1",
+      speaker: "agent",
+      text: "Thanks for calling Glow and Go.",
+      at: 3.25,
+    });
+  });
+
+  it("passes caller text through unchanged while mapping its metadata", () => {
+    const text = "  I'd like a balayage.\nIs Friday open?  ";
+
+    expect(mapElevenLabsMessage({ message: text, source: "user", event_id: 2 }, 4.5, 1)).toEqual({
+      id: "live-2",
+      speaker: "caller",
+      text,
+      at: 4.5,
+    });
+  });
+
   it("turns permission and connection failures into actionable copy", () => {
     expect(mapElevenLabsError("NotAllowedError: microphone permission denied")).toBe(callCopy.micPermissionError);
     expect(mapElevenLabsError("transport failed")).toBe(callCopy.connectionError);

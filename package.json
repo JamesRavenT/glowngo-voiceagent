@@ -18,6 +18,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:e2e": "node scripts/run-e2e.mjs",
+    "test:e2e:visual": "node scripts/run-e2e.mjs --visual",
     "test:e2e:live-security": "node scripts/run-e2e.mjs --live-security",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",

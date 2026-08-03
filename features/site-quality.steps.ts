@@ -73,3 +73,15 @@ Then("an automated accessibility scan reports no serious or critical violations"
   const releaseBlocking = details.filter((detail: { impact: Result["impact"] }) => detail.impact === "serious" || detail.impact === "critical");
   expect(releaseBlocking, "Serious or critical axe violations are attached to the test report").toEqual([]);
 });
+
+Then("the hero section matches its visual baseline", async ({ page }) => {
+  const hero = page.locator("#hero");
+  await expect(hero).toBeVisible();
+  await expect(hero).toHaveScreenshot("hero.png");
+});
+
+Then("the call modal consent state matches its visual baseline", async ({ page }) => {
+  const consentDialog = page.getByRole("dialog", { name: dialogName });
+  await expect(consentDialog).toBeVisible();
+  await expect(consentDialog).toHaveScreenshot("call-modal-consent.png");
+});

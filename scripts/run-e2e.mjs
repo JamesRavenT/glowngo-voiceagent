@@ -10,6 +10,8 @@ const require = createRequire(import.meta.url);
 const bddCli = path.join(path.dirname(require.resolve("playwright-bdd")), "cli", "index.js");
 const projectRoot = path.resolve(process.cwd());
 const bddOutputDirectory = path.resolve(projectRoot, ".features-gen");
+const runnerModeFlags = new Set(["--visual", "--live-security"]);
+const forwardedPlaywrightArgs = process.argv.slice(2).filter((argument) => !runnerModeFlags.has(argument));
 
 function run(script, args, env) {
   const result = spawnSync(process.execPath, [script, ...args], { env, stdio: "inherit" });
@@ -28,19 +30,39 @@ function generateBdd(env) {
   run(bddCli, ["--config", "playwright.config.ts"], env);
 }
 
+function runPlaywright(modeArgs, env) {
+  run(require.resolve("@playwright/test/cli"), [
+    "test",
+    "--config",
+    "playwright.config.ts",
+    ...forwardedPlaywrightArgs,
+    ...modeArgs,
+  ], env);
+}
+
 const commonEnv = {
   ...process.env,
   ELEVENLABS_API_KEY: artifactSentinels.server["elevenlabs-api-key"],
   N8N_WEBHOOK_SECRET: artifactSentinels.server["n8n-webhook-secret"],
 };
 
-if (process.argv.includes("--live-security")) {
+if (process.argv.includes("--visual")) {
+  const visualEnv = { ...commonEnv, E2E_INCLUDE_VISUAL: "1" };
+  run(fileURLToPath(new URL("./build-e2e.mjs", import.meta.url)), [], visualEnv);
+  generateBdd(visualEnv);
+  runPlaywright([
+    "--grep",
+    "@visual",
+    "--project",
+    "desktop-bdd",
+  ], visualEnv);
+} else if (process.argv.includes("--live-security")) {
   const liveEnv = { ...commonEnv, E2E_INCLUDE_DEPLOYMENT: "1", E2E_SKIP_WEBSERVER: "1" };
   run(fileURLToPath(new URL("./build-live-security.mjs", import.meta.url)), [], liveEnv);
   generateBdd(liveEnv);
-  run(require.resolve("@playwright/test/cli"), ["test", "--config", "playwright.config.ts", "--grep", "@deployment"], liveEnv);
+  runPlaywright(["--grep", "@deployment"], liveEnv);
 } else {
   run(fileURLToPath(new URL("./build-e2e.mjs", import.meta.url)), [], commonEnv);
   generateBdd(commonEnv);
-  run(require.resolve("@playwright/test/cli"), ["test", "--config", "playwright.config.ts"], commonEnv);
+  runPlaywright([], commonEnv);
 }

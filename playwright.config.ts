@@ -18,9 +18,16 @@ if (!Number.isInteger(e2ePort) || e2ePort < 1 || e2ePort > 65_535) {
 const e2eBaseUrl = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
-  grepInvert: process.env.E2E_INCLUDE_DEPLOYMENT === "1"
-    ? /@manual|@visual/
-    : /@manual|@visual|@deployment/,
+  grepInvert: process.env.E2E_INCLUDE_VISUAL === "1"
+    ? /@manual|@deployment/
+    : process.env.E2E_INCLUDE_DEPLOYMENT === "1"
+      ? /@manual|@visual/
+      : /@manual|@visual|@deployment/,
+  expect: {
+    toHaveScreenshot: {
+      pathTemplate: "e2e/visual-snapshots/{arg}-{projectName}-{platform}{ext}",
+    },
+  },
   fullyParallel: false,
   workers: 2,
   forbidOnly: Boolean(process.env.CI),
