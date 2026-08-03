@@ -99,6 +99,17 @@ describe("FloatingCallButton", () => {
     expect(screen.getByText("floating")).toBeInTheDocument();
   });
 
+  it("keeps the repeating live-call pulse off the layout-projected button", () => {
+    renderButton();
+    fireEvent.click(screen.getByRole("button", { name: contactCopy.floatingCallButtonAccessibleName }));
+    fireEvent.click(screen.getByRole("button", { name: "Minimize" }));
+
+    const liveButton = screen.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName });
+
+    expect(liveButton).toHaveClass("floating-call-button--live-pulse");
+    expect(liveButton.getAttribute("style") ?? "").not.toContain("scale");
+  });
+
   it("keeps the rotating indicators static under reduced motion", () => {
     setReducedMotion(true);
     renderButton();
@@ -107,6 +118,8 @@ describe("FloatingCallButton", () => {
 
     const liveButton = screen.getByRole("button", { name: callCopy.minimizedCallButtonAccessibleName });
     expect(liveButton).toHaveAttribute("data-pulse", "false");
+    expect(liveButton).not.toHaveClass("floating-call-button--live-pulse");
+    expect(liveButton.getAttribute("style") ?? "").not.toContain("scale");
     expect(liveButton.querySelectorAll("[style*='rotate']")).toHaveLength(0);
   });
 });
