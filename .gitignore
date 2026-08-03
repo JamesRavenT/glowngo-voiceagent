@@ -12,6 +12,7 @@
 !.yarn/versions
 
 # testing
+/.features-gen/
 /allure-results
 /allure-report
 /coverage

@@ -1,4 +1,11 @@
 import { defineConfig } from "@playwright/test";
+import { defineBddConfig } from "playwright-bdd";
+
+const bddTestDir = defineBddConfig({
+  features: "features/**/*.feature",
+  steps: "features/**/*.steps.ts",
+  outputDir: ".features-gen",
+});
 
 const e2ePort = Number(process.env.E2E_PORT ?? "3000");
 
@@ -11,7 +18,6 @@ if (!Number.isInteger(e2ePort) || e2ePort < 1 || e2ePort > 65_535) {
 const e2eBaseUrl = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
-  testDir: "./e2e",
   fullyParallel: false,
   workers: 2,
   forbidOnly: Boolean(process.env.CI),
@@ -28,10 +34,27 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
+      testDir: "./e2e",
       use: { browserName: "chromium", viewport: { width: 1280, height: 800 } },
     },
     {
       name: "mobile",
+      testDir: "./e2e",
+      use: {
+        browserName: "chromium",
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
+    {
+      name: "desktop-bdd",
+      testDir: bddTestDir,
+      use: { browserName: "chromium", viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: "mobile-bdd",
+      testDir: bddTestDir,
       use: {
         browserName: "chromium",
         viewport: { width: 390, height: 844 },

@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     ".open-next/**",
     ".wrangler/**",
     // Test report/artifact outputs:
+    ".features-gen/**",
     "allure-results/**",
     "allure-report/**",
     "playwright-report/**",

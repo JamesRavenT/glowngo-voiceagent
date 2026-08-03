@@ -17,7 +17,7 @@
     "crop:storefront": "node scripts/crop-storefront.ts",
     "start": "next start",
     "test": "vitest run",
-    "test:e2e": "pnpm build:e2e && playwright test",
+    "test:e2e": "pnpm build:e2e && bddgen --config playwright.config.ts && playwright test --config playwright.config.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
@@ -48,6 +48,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "allure": "^3.14.3",
     "allure-playwright": "^3.10.2",
+    "playwright-bdd": "9.2.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",
