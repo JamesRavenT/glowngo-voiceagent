@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { mapElevenLabsError, mapElevenLabsMessage, mapElevenLabsStatus } from "@/components/call/elevenlabs-call-session";
+import {
+  mapElevenLabsError,
+  mapElevenLabsMessage,
+  mapElevenLabsStatus,
+  stripElevenLabsAudioTags,
+} from "@/components/call/elevenlabs-call-session";
 import { callCopy } from "@/content";
 
 describe("ElevenLabs session mappings", () => {
@@ -21,5 +26,30 @@ describe("ElevenLabs session mappings", () => {
   it("turns permission and connection failures into actionable copy", () => {
     expect(mapElevenLabsError("NotAllowedError: microphone permission denied")).toBe(callCopy.micPermissionError);
     expect(mapElevenLabsError("transport failed")).toBe(callCopy.connectionError);
+  });
+});
+
+describe("stripElevenLabsAudioTags", () => {
+  it("removes a leading audio tag", () => {
+    expect(stripElevenLabsAudioTags("[happy] Hi Raven.")).toBe("Hi Raven.");
+  });
+
+  it("removes a mid-string audio tag", () => {
+    expect(stripElevenLabsAudioTags("Sure. [pause] One moment.")).toBe("Sure. One moment.");
+  });
+
+  it("removes multiple audio tags from one message", () => {
+    expect(stripElevenLabsAudioTags("[warmly] Welcome. [long pause] How can I help? [supportive]"))
+      .toBe("Welcome. How can I help?");
+  });
+
+  it("returns an empty string for a tag-only message", () => {
+    expect(stripElevenLabsAudioTags(" [pause] ")).toBe("");
+  });
+
+  it("passes through a message with no tags byte-identically", () => {
+    const message = "  Hi Raven.\nHow can I help?  ";
+
+    expect(stripElevenLabsAudioTags(message)).toBe(message);
   });
 });

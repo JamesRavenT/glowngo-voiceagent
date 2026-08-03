@@ -8,11 +8,18 @@ import { callCopy } from "@/content";
 
 type SdkMessage = { message: string; role?: "user" | "agent"; source?: "user" | "ai"; event_id?: number };
 
+export function stripElevenLabsAudioTags(text: string): string {
+  const audioTagPattern = /\[[^\[\]]*\]/g;
+  if (!audioTagPattern.test(text)) return text;
+
+  return text.replace(audioTagPattern, " ").replace(/\s+/g, " ").trim();
+}
+
 export function mapElevenLabsMessage(message: SdkMessage, at: number, index: number): TranscriptEntry {
   return {
     id: message.event_id === undefined ? `live-${index}` : `live-${message.event_id}`,
     speaker: message.role === "agent" || message.source === "ai" ? "agent" : "caller",
-    text: message.message,
+    text: stripElevenLabsAudioTags(message.message),
     at,
   };
 }
@@ -54,7 +61,10 @@ function ElevenLabsSession({ children }: { children: (session: CallSession) => R
     onModeChange: ({ mode }) => setStatus(mode),
     onMessage: (message) => {
       const at = (Date.now() - startedAt) / 1000;
-      setTranscript((entries) => [...entries, mapElevenLabsMessage(message, at, entries.length)]);
+      setTranscript((entries) => {
+        const entry = mapElevenLabsMessage(message, at, entries.length);
+        return entry.text ? [...entries, entry] : entries;
+      });
     },
     onError: (message) => {
       const mappedMessage = mapElevenLabsError(message);
