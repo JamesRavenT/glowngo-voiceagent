@@ -1,7 +1,9 @@
 import { expect, type APIResponse } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 
-const { Before, Given, When, Then } = createBdd();
+import { test } from "../e2e/fixtures/access-gate";
+
+const { Before, Given, When, Then } = createBdd(test);
 
 type Booking = {
   reference: string;

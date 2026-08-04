@@ -1,6 +1,8 @@
 import { createBdd } from "playwright-bdd";
 
-const { Given, When, Then } = createBdd();
+import { test } from "../e2e/fixtures/access-gate";
+
+const { Given, When, Then } = createBdd(test);
 
 Given(/^(?:the ElevenLabs account has exhausted its quota|a live call to the hosted agent|the deployed Cloudflare URL)$/, async ({ $testInfo }) => {
   $testInfo.skip(true, "Manual release check; excluded from the automated run by Playwright tag filtering");

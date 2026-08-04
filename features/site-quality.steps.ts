@@ -4,8 +4,9 @@ import type { NodeResult, Result } from "axe-core";
 import { createBdd } from "playwright-bdd";
 
 import { callCopy } from "@/content";
+import { test } from "../e2e/fixtures/access-gate";
 
-const { Given, When, Then } = createBdd();
+const { Given, When, Then } = createBdd(test);
 const dialogName = "Glow & Go voice assistant";
 
 async function openCallModal(page: Page) {

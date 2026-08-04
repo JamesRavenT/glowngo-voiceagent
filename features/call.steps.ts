@@ -2,8 +2,9 @@ import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 
 import { callCopy } from "@/content";
+import { test } from "../e2e/fixtures/access-gate";
 
-const { Given, When, Then } = createBdd();
+const { Given, When, Then } = createBdd(test);
 
 Given("a call is in progress", async ({ page }) => {
   await page.goto("/");

@@ -1,4 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
+
+import { test } from "./fixtures/access-gate";
 
 test("floating call button follows the desktop and mobile behavior", async ({ page, isMobile }) => {
   await page.goto("/");

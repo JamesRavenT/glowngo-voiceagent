@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 
 import { chromium, expect } from "@playwright/test";
 
+import { STORAGE_KEY } from "../lib/access-gate/storage.ts";
+
 const require = createRequire(import.meta.url);
 const nextCli = require.resolve("next/dist/bin/next");
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -14,6 +16,9 @@ const projectRoot = path.resolve(scriptDirectory, "..");
 const outputDirectory = path.join(projectRoot, "docs", "assets");
 const port = 3100;
 const baseURL = `http://127.0.0.1:${port}`;
+const accessVerificationEndpoint =
+  "https://bwjxapgpjhlxpkvvysxf.supabase.co/functions/v1/verify-access-key";
+const screenshotAccessKey = "GLOW-GO-SCREENSHOTS";
 
 const serverEnvironment = {
   ...process.env,
@@ -63,6 +68,45 @@ async function waitForServer() {
 }
 
 async function preparePage(page) {
+  await page.addInitScript(({ key, value }) => {
+    window.localStorage.setItem(key, value);
+  }, { key: STORAGE_KEY, value: screenshotAccessKey });
+  await page.route(accessVerificationEndpoint, async (route) => {
+    const method = route.request().method();
+    if (method === "OPTIONS") {
+      await route.fulfill({
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "content-type",
+          "Access-Control-Expose-Headers": "Retry-After",
+        },
+      });
+      return;
+    }
+
+    if (method !== "POST") {
+      await route.fulfill({
+        status: 405,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Expose-Headers": "Retry-After",
+        },
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Expose-Headers": "Retry-After",
+      },
+      body: JSON.stringify({ valid: true }),
+    });
+  });
   await page.goto(baseURL, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator("body")).toBeVisible();

@@ -12,6 +12,7 @@ const result = spawnSync(process.execPath, [nextCli, "build", "--webpack"], {
   env: {
     ...buildEnv,
     NEXT_DIST_DIR: ".next-live-security",
+    NEXT_PUBLIC_ACCESS_PROJECT_ID: "00000000-0000-4000-8000-000000000000",
     NEXT_PUBLIC_AGENT_MODE: "live",
     NEXT_PUBLIC_ELEVENLABS_AGENT_ID: artifactSentinels.publicAgentIdentifier,
     ELEVENLABS_API_KEY: artifactSentinels.server["elevenlabs-api-key"],
