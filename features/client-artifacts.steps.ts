@@ -5,8 +5,9 @@ import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 
 import { artifactSentinels } from "../scripts/security-sentinels.mjs";
+import { test } from "../e2e/fixtures/access-gate";
 
-const { Before, Given, When, Then } = createBdd();
+const { Before, Given, When, Then } = createBdd(test);
 
 type Match = { file: string; sentinelClass: string };
 

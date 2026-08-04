@@ -1,6 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 import { callCopy } from "@/content";
+import { test } from "./fixtures/access-gate";
 
 const floatingButton = (page: Page) => page
   .getByRole("button", { name: "Book now — call Gigi, the Glow & Go voice agent", exact: true })

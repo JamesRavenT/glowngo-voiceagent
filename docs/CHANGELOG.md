@@ -4,10 +4,47 @@
 
 ### Added
 
+- **An access gate now wraps the whole site**
+  ([ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md)). A key is verified against a
+  remote endpoint on **every page load** — a stored key is a convenience, never proof, because it
+  may have been revoked since the last visit. The key itself is stored, never a `verified` flag,
+  so revocation actually takes effect.
+- The gate distinguishes four failure states rather than collapsing them into "invalid key": a
+  revoked stored key is reported as *expired* and cleared, a mistyped key as *not valid*, an outage
+  as *couldn't verify right now* (keeping the stored key, so an outage cannot force a reissue), and
+  a 429 disables submission for the `Retry-After` duration.
+- `NEXT_PUBLIC_ACCESS_PROJECT_ID` — the project UUID that scopes key verification. Validated as a
+  UUID at startup, because posting `undefined` would reject every key and look like an invalid-key
+  error. On Cloudflare it is a **build** variable.
+- `NEXT_PUBLIC_ACCESS_VERIFY_URL` — the verification endpoint, with **no fallback**. A missing value
+  locks the site rather than quietly using a compiled-in URL, so a broken build configuration cannot
+  masquerade as a working one. Also a **build** variable.
+- Keys are format-checked before any request is sent, so a mistyped key costs nothing against the
+  10-requests-per-60-seconds limit. A wrong-shaped key is a fifth, distinct UI state — it is not a
+  server rejection and is not worded like one.
 - Added Allure reporting to the Playwright suite: `test:e2e` emits fresh `allure-results`, and `test:e2e:report` builds and opens the HTML report.
 
 ### Changed
 
+- **The verification endpoint is deployed and its contract changed.** `NEXT_PUBLIC_ACCESS_PROJECT_ID`
+  now holds the real project UUID; without it the gate was posting `undefined` as `project` and
+  rejecting every key, which presented as "invalid key" to everyone.
+- **All origin and CORS handling is deleted.** The endpoint answers
+  `Access-Control-Allow-Origin: *`, so there is no allowlist, no origin to register with the
+  endpoint owner, and no coordination needed for localhost or preview deployments. The runbook's
+  origins table and every note about registering one are gone.
+- **403 is removed from the response contract** and no longer treated as "origin not allowlisted".
+- **`Retry-After` is readable** — the endpoint exposes it via `Access-Control-Expose-Headers`, so the
+  429 countdown shows the real value instead of always falling back to 60 seconds. The fallback
+  stays for a 429 that omits the header, and the e2e suite now covers both paths.
+
+- **The site is no longer rendered on first paint.** Content mounts only after the access gate
+  verifies, so anything reading the DOM immediately after navigation sees the checking screen. The
+  shared Playwright fixture wraps `page.goto` to wait for `#main-content`; two specs that swept the
+  DOM straight after `goto` had been relying on the old server-rendered first paint.
+- The e2e suite keeps the real gate enabled and stubs the verification endpoint in a shared
+  fixture, rather than disabling the gate for tests, so the suite still exercises the production
+  render path.
 - **The page scrolls normally.** Section snapping is gone
   ([ADR 0007](decisions/0007-normal-scrolling-replaces-section-snapping.md), superseding
   [ADR 0001](decisions/0001-gsap-for-section-snapping.md)). Nothing intercepts wheel, touch, or key

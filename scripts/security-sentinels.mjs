@@ -5,3 +5,5 @@ export const artifactSentinels = Object.freeze({
   }),
   publicAgentIdentifier: "e2e_public_agent_5c1f9a73",
 });
+
+export const testAccessVerificationEndpoint = "https://access-gate.invalid/verify";

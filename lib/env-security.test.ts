@@ -8,6 +8,7 @@ const rootConfigurationExtensions = new Set([".json", ".mjs", ".ts"]);
 const sourceDirectories = ["app", "components", "lib", "scripts", "content", "integrations", "e2e", "features"];
 const serverCredentialNames = ["ELEVENLABS_API_KEY", "N8N_WEBHOOK_SECRET"];
 const serverOnlyNames = [...serverCredentialNames, "N8N_WEBHOOK_HEADER_NAME"];
+const supabaseCredentialNames = ["SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SERVICE_KEY"];
 
 function sourceConfigurationFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -38,6 +39,19 @@ it("does not expose a server credential under a NEXT_PUBLIC_ name", () => {
     return forbiddenNames.filter((name) => source.includes(name)).map((name) => ({
       file: path.relative(process.cwd(), file),
       credential: name.replace("NEXT_PUBLIC_", ""),
+    }));
+  });
+
+  expect(offenders).toEqual([]);
+});
+
+it("does not include Supabase credentials", () => {
+  const forbiddenNames = supabaseCredentialNames.flatMap((name) => [name, `NEXT_PUBLIC_${name}`]);
+  const offenders = configurationFiles(process.cwd()).flatMap((file) => {
+    const source = readFileSync(file, "utf8");
+    return forbiddenNames.filter((name) => source.includes(name)).map((name) => ({
+      file: path.relative(process.cwd(), file),
+      credential: name,
     }));
   });
 

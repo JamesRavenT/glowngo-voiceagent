@@ -4,7 +4,7 @@ import { rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-import { artifactSentinels } from "./security-sentinels.mjs";
+import { artifactSentinels, testAccessVerificationEndpoint } from "./security-sentinels.mjs";
 
 const require = createRequire(import.meta.url);
 const bddCli = path.join(path.dirname(require.resolve("playwright-bdd")), "cli", "index.js");
@@ -44,6 +44,7 @@ const commonEnv = {
   ...process.env,
   ELEVENLABS_API_KEY: artifactSentinels.server["elevenlabs-api-key"],
   N8N_WEBHOOK_SECRET: artifactSentinels.server["n8n-webhook-secret"],
+  NEXT_PUBLIC_ACCESS_VERIFY_URL: testAccessVerificationEndpoint,
 };
 
 if (process.argv.includes("--visual")) {

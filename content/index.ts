@@ -1,4 +1,5 @@
 export { about } from "./about";
+export { accessCopy } from "./access";
 export { voiceAgent } from "./agent";
 export { branches } from "./branches";
 export { callCopy, simulatedCallScript } from "./call";

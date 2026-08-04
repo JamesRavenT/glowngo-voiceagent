@@ -19,6 +19,43 @@ holds no booking secrets**. It renders the call UI and nothing else. Cloudflare 
 static-ish site via `@opennextjs/cloudflare`; the credentials live in n8n. See
 [ADR-0005](decisions/0005-cloudflare-workers-via-opennext.md).
 
+## The access gate
+
+The whole site sits behind an access key. `components/access/access-gate.tsx` wraps the entire body
+in `app/layout.tsx` — outside `CallProvider`, so the call stack never mounts while locked — and
+renders the site only after the key verifies.
+
+```text
+Browser ──POST {key, project}──> verify-access-key (Supabase Edge Function)
+```
+
+This is the **one browser-side request to a third-party origin** in the app. It carries no
+`Authorization`, no `apikey` header, no cookies and no secrets: the key is the visitor's own, and
+the project UUID is a public identifier that is inert without one. It must be a plain `fetch` — a
+Supabase client helper would attach `apikey` and the function's preflight rejects any header other
+than `content-type`. It must also never set `credentials`, because the endpoint answers
+`Access-Control-Allow-Origin: *` and a credentialed request would have its response blocked by the
+browser. That wildcard also means there is **no origin allowlist**: localhost, previews and the
+apex all work with no registration.
+
+Both the endpoint and the project UUID come from `NEXT_PUBLIC_*` variables, and the endpoint has no
+compiled-in fallback: if either is missing the site locks rather than guessing. Keys are
+format-checked in `verifyAccessKey` before any request goes out, because the endpoint allows only
+10 requests per 60 seconds and a typo must not spend one.
+
+Verification runs on **every page load**, never on a cached answer, because a key can be revoked
+between visits. Client-side route changes read the in-memory outcome; reloading re-verifies. The
+gate never fails open — only an explicit `{"valid":true}` unlocks, and an outage denies as an error
+without deleting the stored key.
+
+Two consequences reach beyond the gate itself. **Content no longer exists on first paint**, so
+anything reading the DOM immediately after navigation sees the checking screen — the e2e fixture
+wraps `page.goto` for this reason. And the gate is deliberately **cosmetic**: the RSC payload ships
+regardless, so it gates access, not confidentiality.
+
+[ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md) has the full reasoning, the four
+distinct failure states, and the CORS requirements the endpoint must satisfy.
+
 ## The mock layer
 
 `app/api/mock/*` stands in for n8n in simulated mode and doubles as the **executable contract

@@ -1,6 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 import { callCopy } from "@/content";
+import { test } from "./fixtures/access-gate";
 
 async function startCall(page: Page) {
   await expect(page.getByText(callCopy.statusLabels.consent, { exact: true })).toBeVisible();

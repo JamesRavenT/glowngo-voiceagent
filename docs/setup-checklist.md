@@ -42,10 +42,22 @@ NEXT_PUBLIC_BOOKING_SHEET_URL=
 
 Leave the sheet URL empty for now; it only controls a link on the Contact section.
 
-**There are only these three variables, and all are `NEXT_PUBLIC_*` — they are baked into the
-browser bundle and publicly visible.** That's by design: the browser is never in the booking path,
-so it holds no secrets. Your Google service-account JSON and any n8n keys live *in n8n*, never in
-this repo.
+Two further variables drive the access gate. Copy them verbatim — neither is a secret:
+
+```dotenv
+NEXT_PUBLIC_ACCESS_PROJECT_ID=28705c07-b647-4dc0-9abd-83a67964fa94
+NEXT_PUBLIC_ACCESS_VERIFY_URL=https://bwjxapgpjhlxpkvvysxf.supabase.co/functions/v1/verify-access-key
+```
+
+Either one missing shows a "misconfigured" screen instead of the site — deliberately, since there is
+no fallback endpoint and no way to verify a key without both. Nothing else is needed: the endpoint
+allows every origin, so there is no allowlist to be added to before local development works. See
+[ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md).
+
+**All five variables are `NEXT_PUBLIC_*` — they are baked into the browser bundle and publicly
+visible.** That's by design: the browser is never in the booking path, so it holds no secrets. The
+project UUID is an identifier rather than a secret, and is inert without a valid access key. Your
+Google service-account JSON and any n8n keys live *in n8n*, never in this repo.
 
 ### 3. Restart the dev server
 

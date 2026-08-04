@@ -1,11 +1,14 @@
-// Run with `node scripts/capture-screenshots.mjs` after `pnpm build`.
-import { spawn } from "node:child_process";
+// Run with `node scripts/capture-screenshots.mjs`.
+import { spawn, spawnSync } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { chromium, expect } from "@playwright/test";
+
+import { STORAGE_KEY } from "../lib/access-gate/storage.ts";
+import { testAccessVerificationEndpoint } from "./security-sentinels.mjs";
 
 const require = createRequire(import.meta.url);
 const nextCli = require.resolve("next/dist/bin/next");
@@ -14,13 +17,25 @@ const projectRoot = path.resolve(scriptDirectory, "..");
 const outputDirectory = path.join(projectRoot, "docs", "assets");
 const port = 3100;
 const baseURL = `http://127.0.0.1:${port}`;
+const screenshotAccessKey = "SNAP-CAPT-URES-E2E";
 
 const serverEnvironment = {
   ...process.env,
+  NEXT_PUBLIC_ACCESS_PROJECT_ID: "00000000-0000-4000-8000-000000000000",
+  NEXT_PUBLIC_ACCESS_VERIFY_URL: testAccessVerificationEndpoint,
   NEXT_PUBLIC_AGENT_MODE: "simulated",
   NEXT_PUBLIC_ELEVENLABS_AGENT_ID: "",
   PORT: String(port),
 };
+
+const build = spawnSync(process.execPath, [nextCli, "build", "--webpack"], {
+  cwd: projectRoot,
+  env: serverEnvironment,
+  stdio: "inherit",
+});
+
+if (build.error) throw build.error;
+if (build.status !== 0) process.exit(build.status ?? 1);
 
 const server = spawn(
   process.execPath,
@@ -63,6 +78,42 @@ async function waitForServer() {
 }
 
 async function preparePage(page) {
+  await page.addInitScript(({ key, value }) => {
+    window.localStorage.setItem(key, value);
+  }, { key: STORAGE_KEY, value: screenshotAccessKey });
+  await page.route(testAccessVerificationEndpoint, async (route) => {
+    const method = route.request().method();
+    if (method === "OPTIONS") {
+      await route.fulfill({
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "content-type",
+        },
+      });
+      return;
+    }
+
+    if (method !== "POST") {
+      await route.fulfill({
+        status: 405,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ valid: true }),
+    });
+  });
   await page.goto(baseURL, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator("body")).toBeVisible();
