@@ -30,10 +30,13 @@ Browser ──POST {key, project}──> verify-access-key (Supabase Edge Functi
 ```
 
 This is the **one browser-side request to a third-party origin** in the app. It carries no
-`Authorization` and no `apikey` header and no secrets: the key is the visitor's own, and the project
-UUID is a public identifier that is inert without one. It must be a plain `fetch` — a Supabase
-client helper would attach `apikey` and the function's preflight rejects any header other than
-`content-type`.
+`Authorization`, no `apikey` header, no cookies and no secrets: the key is the visitor's own, and
+the project UUID is a public identifier that is inert without one. It must be a plain `fetch` — a
+Supabase client helper would attach `apikey` and the function's preflight rejects any header other
+than `content-type`. It must also never set `credentials`, because the endpoint answers
+`Access-Control-Allow-Origin: *` and a credentialed request would have its response blocked by the
+browser. That wildcard also means there is **no origin allowlist**: localhost, previews and the
+apex all work with no registration.
 
 Both the endpoint and the project UUID come from `NEXT_PUBLIC_*` variables, and the endpoint has no
 compiled-in fallback: if either is missing the site locks rather than guessing. Keys are

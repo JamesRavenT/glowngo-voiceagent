@@ -49,13 +49,13 @@ because the visitor's next action differs in each case:
 | Key is the wrong shape | Reject locally, **send nothing** | *not the right shape — use ABCD-EFGH-JKLM-NPQ* |
 | Stored key now rejected | Delete it, show the gate | *expired — request a new one from the owner* |
 | Freshly typed key rejected | Keep the gate, allow retry | *not valid for this project* |
-| 503 / network / timeout / 403 | Keep the gate, **keep the stored key**, offer retry | *couldn't verify right now* |
+| 503 / network / timeout | Keep the gate, **keep the stored key**, offer retry | *couldn't verify right now* |
 | 429 | Disable submit for the back-off | *too many attempts, wait n seconds* |
 
-A wrong key is reported as **`200 {"valid":false}`**, not a 401 or 403. Branching on
-`response.ok` or on the status code would therefore report a rate limit, an outage, or an
-unlisted origin as "your key is wrong" — and since an unlisted origin returns 403, a bad deploy
-would tell *every* visitor their key was invalid. Only the `valid` field decides validity.
+A wrong key is reported as **`200 {"valid":false}`**, never a non-2xx status. Branching on
+`response.ok` or on the status code would therefore report a rate limit or an outage as "your key
+is wrong", telling visitors to hunt for a typo during an incident. Only the `valid` field decides
+validity.
 
 Telling someone their key has a typo when it was actually revoked sends them hunting for a
 mistake they did not make. Deleting their key during an outage forces a reissue that was never
@@ -98,20 +98,22 @@ regression test for exactly this.
 so treating `{}` or a changed response schema as `{"valid":false}` would wipe every visitor's key
 the moment the endpoint changed. Only an explicit boolean `false` denies.
 
-**The gate depends on an exact-match origin allowlist held by the endpoint owner.** It is a browser
-`fetch` to another origin. An unlisted origin returns 403 with **no** `Access-Control-Allow-Origin`,
-so the browser surfaces a generic network error and our JavaScript never sees the 403 — the site
-shows "couldn't verify right now" to everyone with nothing in the console pointing at the cause. If
-verification fails inexplicably, check the allowlist before this code. The origins are listed in
-[the runbook](../runbook.md); `preview_urls` is disabled in `wrangler.jsonc` because Cloudflare
-gives every version a unique hostname that can never be allowlisted.
+**There is no origin allowlist — do not reintroduce one.** The endpoint answers
+`Access-Control-Allow-Origin: *`, so localhost, preview deployments, `www` and the apex all work
+with no coordination with the endpoint owner. An earlier version of this ADR described an
+exact-match allowlist and a 403 for unlisted origins; both are gone from the contract as of
+2026-08-05. If a future change to this file adds an "origins to register" list, that is a
+regression.
 
-**`Retry-After` is currently unreadable, and the tests reflect that.** It is not CORS-safelisted and
-the endpoint does not yet send `Access-Control-Expose-Headers: Retry-After`, so cross-origin
-JavaScript reads `null` and the countdown falls back to 60 seconds. The e2e mock therefore does not
-send the header either: an earlier version of the mock *did* expose it, which meant the 429 test was
-asserting a value production cannot return. The parsing code is already correct for the day they
-ship the fix — only the mock and its assertion will need revisiting.
+**`Retry-After` is readable.** The endpoint lists it in `Access-Control-Expose-Headers` on the 429,
+so cross-origin JavaScript gets the real value. `parseRetryAfterSeconds` still keeps a 60-second
+fallback for a 429 that arrives without the header, and the e2e suite covers both paths — the real
+header and the fallback — because asserting only one of them has already hidden a mismatch once.
+
+**Never send credentials.** No `credentials: "include"`, no cookies. A wildcard
+`Access-Control-Allow-Origin` and a credentialed request are mutually exclusive, so the browser
+blocks the response whatever the server returns. The access key travels in the JSON body, which is
+not a CORS credential.
 
 **Do not reach for a Supabase client helper.** `supabase.functions.invoke()` and friends attach an
 `apikey` header automatically, and the function's preflight rejects any request asking to send a

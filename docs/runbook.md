@@ -69,8 +69,8 @@ path. Your Google credentials and n8n keys live in n8n, never here.
 | `NEXT_PUBLIC_AGENT_MODE` | `simulated` \| `live` | Selects the call implementation |
 | `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` | `agent_xxxxx` | Which agent to connect to |
 | `NEXT_PUBLIC_BOOKING_SHEET_URL` | public sheet URL | Shows the sheet link on Contact |
-| `NEXT_PUBLIC_ACCESS_PROJECT_ID` | project UUID | Scopes access-key verification |
-| `NEXT_PUBLIC_ACCESS_VERIFY_URL` | verification endpoint | Where keys are verified |
+| `NEXT_PUBLIC_ACCESS_PROJECT_ID` | `28705c07-b647-4dc0-9abd-83a67964fa94` | Scopes access-key verification |
+| `NEXT_PUBLIC_ACCESS_VERIFY_URL` | `https://bwjxapgpjhlxpkvvysxf.supabase.co/functions/v1/verify-access-key` | Where keys are verified |
 
 **Either access variable missing locks the site** behind a "misconfigured" screen for everyone.
 That is deliberate in both cases. The gate refuses to post `undefined` as the project, because that
@@ -79,23 +79,12 @@ known endpoint URL, because a fallback would hide a broken build config and let 
 contact the production verifier. Both are **build** variables — a value change only takes effect on
 the next build. See [ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md).
 
-### Origins the endpoint owner must allowlist
+### No origin registration is needed
 
-Verification is a browser call to another origin, and their allowlist is exact-match. An unlisted
-origin returns 403 with no `Access-Control-Allow-Origin`, so the browser surfaces a generic network
-error and our JavaScript never sees the 403 — **if calls fail with nothing useful in the console,
-suspect the allowlist before suspecting this code.**
-
-| Origin | Why |
-|---|---|
-| `https://glowngo-voiceagentdemo.site` | Production custom domain |
-| `https://glowngo-voiceagent.jraven-tabag.workers.dev` | Stable fallback; `workers_dev` is pinned on |
-| `http://localhost:3000`, `http://127.0.0.1:3000` | Local dev; the two forms are different origins |
-| `http://127.0.0.1:3100` | `scripts/capture-screenshots.mjs` |
-
-`www` is not on the list: it is a placeholder `A` record plus a Redirect Rule to the apex, so the
-document is always served from the apex origin. `preview_urls` is disabled in `wrangler.jsonc`
-because Cloudflare gives each version a unique hostname that can never be allowlisted.
+The verification endpoint answers `Access-Control-Allow-Origin: *`. There is no allowlist and
+nothing to register with the endpoint owner — localhost, preview deployments, `www` and the apex
+all work unchanged. If verification fails, the cause is in this repo's configuration or the
+endpoint itself, not in an origin list.
 
 **The resolution rule:** live requires `NEXT_PUBLIC_AGENT_MODE=live` **and** a non-empty agent id.
 Anything else silently falls back to simulated with the badge showing. You cannot accidentally ship

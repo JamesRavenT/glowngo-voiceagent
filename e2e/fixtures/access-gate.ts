@@ -13,7 +13,7 @@ const CORS_HEADERS = {
 export type AccessVerificationOutcome =
   | { status: 200; valid: boolean }
   | { status: 503 }
-  | { status: 429 };
+  | { status: 429; retryAfter?: string };
 
 type AccessVerificationResolver =
   | AccessVerificationOutcome
@@ -57,10 +57,17 @@ export async function routeAccessVerification(page: Page, resolver: AccessVerifi
       return;
     }
 
+    const rateLimitHeaders: Record<string, string> = outcome.status === 429 && outcome.retryAfter !== undefined
+      ? {
+          "Retry-After": outcome.retryAfter,
+          "Access-Control-Expose-Headers": "Retry-After",
+        }
+      : {};
+
     await route.fulfill({
       status: outcome.status,
       contentType: "application/json",
-      headers: CORS_HEADERS,
+      headers: { ...CORS_HEADERS, ...rateLimitHeaders },
       body: JSON.stringify({ error: outcome.status === 429 ? "rate_limited" : "unavailable" }),
     });
   });
@@ -71,8 +78,8 @@ export async function routeAccessVerification(page: Page, resolver: AccessVerifi
 export const validAccess: AccessVerificationOutcome = { status: 200, valid: true };
 export const invalidAccess: AccessVerificationOutcome = { status: 200, valid: false };
 export const unavailableAccess: AccessVerificationOutcome = { status: 503 };
-export function rateLimitedAccess(): AccessVerificationOutcome {
-  return { status: 429 };
+export function rateLimitedAccess(retryAfter?: string): AccessVerificationOutcome {
+  return { status: 429, retryAfter };
 }
 
 export const test = base.extend({

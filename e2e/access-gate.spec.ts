@@ -94,7 +94,20 @@ test("a 503 preserves a stored key and offers a retry", async ({ page }) => {
     .toBe(E2E_ACCESS_KEY);
 });
 
-test("a 429 uses the 60-second fallback and disables submission during the wait", async ({ page }) => {
+test("a 429 uses the Retry-After header and disables submission during the wait", async ({ page }) => {
+  await routeAccessVerification(page, rateLimitedAccess("17"));
+  await page.goto("/");
+
+  const submit = page.getByRole("button", { name: accessCopy.submitButton, exact: true });
+  await page.getByLabel(accessCopy.inputLabel).fill(E2E_ACCESS_KEY);
+  await submit.click();
+
+  await expect(page.getByRole("status")).toHaveText(accessCopy.rateLimited(17));
+  await expect(submit).toBeDisabled();
+  await expect(page.getByRole("button", { name: accessCopy.retryButton })).toBeDisabled();
+});
+
+test("a 429 without Retry-After uses the 60-second fallback and disables submission during the wait", async ({ page }) => {
   await routeAccessVerification(page, rateLimitedAccess());
   await page.goto("/");
 

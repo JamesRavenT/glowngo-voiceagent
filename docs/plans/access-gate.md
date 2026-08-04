@@ -33,14 +33,27 @@ Built in four independently verifiable chunks.
   for tests, so the suite exercises the production render path.
 - **`AccessGate` is a component, not a context** — nothing else consumes gate state.
 
-## Before this can admit anyone
+## Chunk 6 — the endpoint went live (2026-08-05)
 
-1. `NEXT_PUBLIC_ACCESS_PROJECT_ID` and `NEXT_PUBLIC_ACCESS_VERIFY_URL` set in Cloudflare **build**
-   variables (not Wrangler `vars` — `NEXT_PUBLIC_*` is inlined at build time, so a change only
-   takes effect on the next build). Both were added by James on 2026-08-04.
-2. **The verification function must actually be deployed.** As of 2026-08-04 it is not; live calls
-   fail at the gateway. Everything here is built and tested against mocks.
-3. **The origins in [the runbook](../runbook.md) must be allowlisted** by the endpoint owner. Their
-   allowlist is exact-match, and an unlisted origin fails as a generic browser network error with
-   no readable 403 — so this is the first thing to check when verification fails for no visible
-   reason. Not fixable from this repository.
+The verification function is deployed and its contract changed. Applied as a correction:
+
+- **The project UUID arrived**: `28705c07-b647-4dc0-9abd-83a67964fa94`. Until now it was unset, so
+  the gate posted `undefined` as `project` and every key was rejected. Set in `.env`, `.env.example`
+  and Cloudflare **build** variables.
+- **All origin/CORS handling is deleted.** The endpoint answers `Access-Control-Allow-Origin: *`.
+  There is no allowlist, nothing to register, and preview deployments and localhost work with no
+  coordination. The runbook's origins table and every "must be allowlisted" note are gone.
+- **403 is out of the contract** and will never be returned; nothing treats it as "origin not
+  allowlisted".
+- **`Retry-After` is now exposed** via `Access-Control-Expose-Headers`, so the countdown reads the
+  real value. The 60-second fallback stays for a 429 without the header, and the e2e suite covers
+  both.
+- Unchanged and deliberately so: the `{key, project}` body, `200 {"valid":…}` semantics, the
+  400/405/429/503 branches, re-verifying on every load, and storing the key rather than a flag.
+
+## Still required to admit anyone
+
+`NEXT_PUBLIC_ACCESS_PROJECT_ID` and `NEXT_PUBLIC_ACCESS_VERIFY_URL` must be set in Cloudflare
+**build** variables — not Wrangler `vars`, since `NEXT_PUBLIC_*` is inlined at build time and a
+change only takes effect on the next build. And this branch is not merged: `main` still deploys a
+site with no gate at all.

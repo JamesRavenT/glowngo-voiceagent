@@ -26,6 +26,18 @@
 
 ### Changed
 
+- **The verification endpoint is deployed and its contract changed.** `NEXT_PUBLIC_ACCESS_PROJECT_ID`
+  now holds the real project UUID; without it the gate was posting `undefined` as `project` and
+  rejecting every key, which presented as "invalid key" to everyone.
+- **All origin and CORS handling is deleted.** The endpoint answers
+  `Access-Control-Allow-Origin: *`, so there is no allowlist, no origin to register with the
+  endpoint owner, and no coordination needed for localhost or preview deployments. The runbook's
+  origins table and every note about registering one are gone.
+- **403 is removed from the response contract** and no longer treated as "origin not allowlisted".
+- **`Retry-After` is readable** — the endpoint exposes it via `Access-Control-Expose-Headers`, so the
+  429 countdown shows the real value instead of always falling back to 60 seconds. The fallback
+  stays for a 429 that omits the header, and the e2e suite now covers both paths.
+
 - **The site is no longer rendered on first paint.** Content mounts only after the access gate
   verifies, so anything reading the DOM immediately after navigation sees the checking screen. The
   shared Playwright fixture wraps `page.goto` to wait for `#main-content`; two specs that swept the
