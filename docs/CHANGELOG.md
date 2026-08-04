@@ -4,10 +4,29 @@
 
 ### Added
 
+- **An access gate now wraps the whole site**
+  ([ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md)). A key is verified against a
+  remote endpoint on **every page load** — a stored key is a convenience, never proof, because it
+  may have been revoked since the last visit. The key itself is stored, never a `verified` flag,
+  so revocation actually takes effect.
+- The gate distinguishes four failure states rather than collapsing them into "invalid key": a
+  revoked stored key is reported as *expired* and cleared, a mistyped key as *not valid*, an outage
+  as *couldn't verify right now* (keeping the stored key, so an outage cannot force a reissue), and
+  a 429 disables submission for the `Retry-After` duration.
+- `NEXT_PUBLIC_ACCESS_PROJECT_ID` — the project UUID that scopes key verification. Validated as a
+  UUID at startup, because posting `undefined` would reject every key and look like an invalid-key
+  error. On Cloudflare it is a **build** variable.
 - Added Allure reporting to the Playwright suite: `test:e2e` emits fresh `allure-results`, and `test:e2e:report` builds and opens the HTML report.
 
 ### Changed
 
+- **The site is no longer rendered on first paint.** Content mounts only after the access gate
+  verifies, so anything reading the DOM immediately after navigation sees the checking screen. The
+  shared Playwright fixture wraps `page.goto` to wait for `#main-content`; two specs that swept the
+  DOM straight after `goto` had been relying on the old server-rendered first paint.
+- The e2e suite keeps the real gate enabled and stubs the verification endpoint in a shared
+  fixture, rather than disabling the gate for tests, so the suite still exercises the production
+  render path.
 - **The page scrolls normally.** Section snapping is gone
   ([ADR 0007](decisions/0007-normal-scrolling-replaces-section-snapping.md), superseding
   [ADR 0001](decisions/0001-gsap-for-section-snapping.md)). Nothing intercepts wheel, touch, or key

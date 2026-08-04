@@ -60,7 +60,7 @@ plus a Redirect Rule to the root. Both are dashboard tasks; neither is expressib
 
 ## 1. The environment variables
 
-Only three, all `NEXT_PUBLIC_*` — meaning they are **baked into the browser bundle and publicly
+Four, all `NEXT_PUBLIC_*` — meaning they are **baked into the browser bundle and publicly
 visible**. That's intentional: the browser holds no secrets, because it is never in the booking
 path. Your Google credentials and n8n keys live in n8n, never here.
 
@@ -69,6 +69,12 @@ path. Your Google credentials and n8n keys live in n8n, never here.
 | `NEXT_PUBLIC_AGENT_MODE` | `simulated` \| `live` | Selects the call implementation |
 | `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` | `agent_xxxxx` | Which agent to connect to |
 | `NEXT_PUBLIC_BOOKING_SHEET_URL` | public sheet URL | Shows the sheet link on Contact |
+| `NEXT_PUBLIC_ACCESS_PROJECT_ID` | project UUID | Scopes access-key verification |
+
+A missing or malformed `NEXT_PUBLIC_ACCESS_PROJECT_ID` locks the site behind a "misconfigured"
+screen for everyone — the gate refuses to post `undefined` as the project, because that would
+reject every key and present as a misleading "invalid key". See
+[ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md).
 
 **The resolution rule:** live requires `NEXT_PUBLIC_AGENT_MODE=live` **and** a non-empty agent id.
 Anything else silently falls back to simulated with the badge showing. You cannot accidentally ship

@@ -42,10 +42,14 @@ NEXT_PUBLIC_BOOKING_SHEET_URL=
 
 Leave the sheet URL empty for now; it only controls a link on the Contact section.
 
-**There are only these three variables, and all are `NEXT_PUBLIC_*` — they are baked into the
-browser bundle and publicly visible.** That's by design: the browser is never in the booking path,
-so it holds no secrets. Your Google service-account JSON and any n8n keys live *in n8n*, never in
-this repo.
+A fourth variable, `NEXT_PUBLIC_ACCESS_PROJECT_ID`, is the project UUID the access gate verifies
+keys against. Without it the gate cannot verify anything and shows a "misconfigured" screen — see
+[ADR 0009](decisions/0009-access-gate-verifies-on-every-load.md).
+
+**All four variables are `NEXT_PUBLIC_*` — they are baked into the browser bundle and publicly
+visible.** That's by design: the browser is never in the booking path, so it holds no secrets. The
+project UUID is an identifier rather than a secret, and is inert without a valid access key. Your
+Google service-account JSON and any n8n keys live *in n8n*, never in this repo.
 
 ### 3. Restart the dev server
 
