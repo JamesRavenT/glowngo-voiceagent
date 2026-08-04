@@ -27,8 +27,17 @@ answer.
   the tab does.
 - The gate **never fails open**. Only an explicit `{"valid":true}` unlocks. Everything else — a
   malformed body, a 500, a network failure, a timeout — denies as an *error*, not as a rejection.
-- The project UUID comes from `NEXT_PUBLIC_ACCESS_PROJECT_ID` and is never hardcoded. It is an
-  identifier, not a secret, and it is inert without a valid key.
+- The project UUID comes from `NEXT_PUBLIC_ACCESS_PROJECT_ID` and the endpoint from
+  `NEXT_PUBLIC_ACCESS_VERIFY_URL`. Neither is hardcoded and **the endpoint has no fallback** — a
+  fallback would hide a broken build config, let a fork silently contact the production verifier,
+  and make endpoint rotation appear to succeed while old bundles kept using the old URL. The UUID
+  is an identifier, not a secret, and is inert without a valid key.
+- **Keys are format-checked before they are sent.** Issued keys match
+  `^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{3}$` — uppercase, with
+  `I`, `O`, `0` and `1` excluded so they cannot be misread. The check lives in `verifyAccessKey`,
+  at the request boundary, not in the form: validating in both places creates two format decisions
+  that drift, and a caller that skipped the form would skip the check. The rate limit is **10
+  requests per 60 seconds**, so a mistyped key must not cost one.
 
 ### The failure states are not interchangeable
 
@@ -37,10 +46,16 @@ because the visitor's next action differs in each case:
 
 | Situation | Response | Wording |
 |---|---|---|
+| Key is the wrong shape | Reject locally, **send nothing** | *not the right shape — use ABCD-EFGH-JKLM-NPQ* |
 | Stored key now rejected | Delete it, show the gate | *expired — request a new one from the owner* |
 | Freshly typed key rejected | Keep the gate, allow retry | *not valid for this project* |
-| 503 / network / timeout | Keep the gate, **keep the stored key**, offer retry | *couldn't verify right now* |
-| 429 | Disable submit for `Retry-After` | *too many attempts, wait n seconds* |
+| 503 / network / timeout / 403 | Keep the gate, **keep the stored key**, offer retry | *couldn't verify right now* |
+| 429 | Disable submit for the back-off | *too many attempts, wait n seconds* |
+
+A wrong key is reported as **`200 {"valid":false}`**, not a 401 or 403. Branching on
+`response.ok` or on the status code would therefore report a rate limit, an outage, or an
+unlisted origin as "your key is wrong" — and since an unlisted origin returns 403, a bad deploy
+would tell *every* visitor their key was invalid. Only the `valid` field decides validity.
 
 Telling someone their key has a typo when it was actually revoked sends them hunting for a
 mistake they did not make. Deleting their key during an outage forces a reissue that was never
@@ -83,12 +98,26 @@ regression test for exactly this.
 so treating `{}` or a changed response schema as `{"valid":false}` would wipe every visitor's key
 the moment the endpoint changed. Only an explicit boolean `false` denies.
 
-**The gate depends on CORS headers the endpoint must send.** It is a browser `fetch` to another
-origin, so without `Access-Control-Allow-Origin` and an `OPTIONS` preflight response, every
-verification fails — and it fails as *unavailable*, meaning the site shows "couldn't verify right
-now" to everyone with no hint that CORS is the cause. `Retry-After` additionally needs
-`Access-Control-Expose-Headers: Retry-After`, or the browser cannot read it and the 429 countdown
-silently falls back to 60 seconds. None of this is fixable from this repository.
+**The gate depends on an exact-match origin allowlist held by the endpoint owner.** It is a browser
+`fetch` to another origin. An unlisted origin returns 403 with **no** `Access-Control-Allow-Origin`,
+so the browser surfaces a generic network error and our JavaScript never sees the 403 — the site
+shows "couldn't verify right now" to everyone with nothing in the console pointing at the cause. If
+verification fails inexplicably, check the allowlist before this code. The origins are listed in
+[the runbook](../runbook.md); `preview_urls` is disabled in `wrangler.jsonc` because Cloudflare
+gives every version a unique hostname that can never be allowlisted.
+
+**`Retry-After` is currently unreadable, and the tests reflect that.** It is not CORS-safelisted and
+the endpoint does not yet send `Access-Control-Expose-Headers: Retry-After`, so cross-origin
+JavaScript reads `null` and the countdown falls back to 60 seconds. The e2e mock therefore does not
+send the header either: an earlier version of the mock *did* expose it, which meant the 429 test was
+asserting a value production cannot return. The parsing code is already correct for the day they
+ship the fix — only the mock and its assertion will need revisiting.
+
+**Do not reach for a Supabase client helper.** `supabase.functions.invoke()` and friends attach an
+`apikey` header automatically, and the function's preflight rejects any request asking to send a
+header other than `content-type`. Plain `fetch` is a requirement, not a preference — which is also
+why the endpoint URL is the only Supabase-adjacent value permitted in this repository, guarded by
+`lib/env-security.test.ts`.
 
 **`NEXT_PUBLIC_ACCESS_PROJECT_ID` is inlined at build time**, so on Cloudflare it belongs in
 **build** variables, never Wrangler `vars` — the same rule and the same reasoning as

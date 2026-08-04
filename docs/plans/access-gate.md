@@ -12,7 +12,8 @@ Built in four independently verifiable chunks.
 | 1 | `lib/access-gate/{env,verify,storage}.ts` + unit tests. No UI. | `8f2ff58` |
 | 2 | `content/access.ts`, `components/access/access-gate.tsx`, `app/layout.tsx` wiring, RTL tests. | `b241448` |
 | 3 | Shared Playwright fixture, gate specs, BDD retrofit, build/capture scripts, `.env.example`. | `0692ebe` |
-| 4 | ADR, architecture, runbook, setup checklist, changelog, `CLAUDE.md`/`AGENTS.md`, Supabase credential-name guard. | — |
+| 4 | ADR, architecture, runbook, setup checklist, changelog, `CLAUDE.md`/`AGENTS.md`, Supabase credential-name guard. | `a14851d` |
+| 5 | Conform to the authoritative endpoint contract: endpoint into an env var with no fallback, client-side key-format validation, 8s timeout, honest 429 mock, `preview_urls: false`. | `baa6500` |
 
 ## Verification
 
@@ -34,9 +35,12 @@ Built in four independently verifiable chunks.
 
 ## Before this can admit anyone
 
-1. `NEXT_PUBLIC_ACCESS_PROJECT_ID` set to the real project UUID in `.env` and in Cloudflare **build**
-   variables (not Wrangler `vars` — `NEXT_PUBLIC_*` is inlined at build time).
-2. The verification endpoint must send `Access-Control-Allow-Origin`, answer the `OPTIONS`
-   preflight, and expose `Retry-After`. Without the first two every verification fails as
-   *unavailable*, which reads to visitors as "couldn't verify right now" with no hint that CORS is
-   the cause. Not fixable from this repository.
+1. `NEXT_PUBLIC_ACCESS_PROJECT_ID` and `NEXT_PUBLIC_ACCESS_VERIFY_URL` set in Cloudflare **build**
+   variables (not Wrangler `vars` — `NEXT_PUBLIC_*` is inlined at build time, so a change only
+   takes effect on the next build). Both were added by James on 2026-08-04.
+2. **The verification function must actually be deployed.** As of 2026-08-04 it is not; live calls
+   fail at the gateway. Everything here is built and tested against mocks.
+3. **The origins in [the runbook](../runbook.md) must be allowlisted** by the endpoint owner. Their
+   allowlist is exact-match, and an unlisted origin fails as a generic browser network error with
+   no readable 403 — so this is the first thing to check when verification fails for no visible
+   reason. Not fixable from this repository.

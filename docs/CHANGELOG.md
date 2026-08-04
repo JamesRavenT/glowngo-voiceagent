@@ -16,6 +16,12 @@
 - `NEXT_PUBLIC_ACCESS_PROJECT_ID` — the project UUID that scopes key verification. Validated as a
   UUID at startup, because posting `undefined` would reject every key and look like an invalid-key
   error. On Cloudflare it is a **build** variable.
+- `NEXT_PUBLIC_ACCESS_VERIFY_URL` — the verification endpoint, with **no fallback**. A missing value
+  locks the site rather than quietly using a compiled-in URL, so a broken build configuration cannot
+  masquerade as a working one. Also a **build** variable.
+- Keys are format-checked before any request is sent, so a mistyped key costs nothing against the
+  10-requests-per-60-seconds limit. A wrong-shaped key is a fifth, distinct UI state — it is not a
+  server rejection and is not worded like one.
 - Added Allure reporting to the Playwright suite: `test:e2e` emits fresh `allure-results`, and `test:e2e:report` builds and opens the HTML report.
 
 ### Changed

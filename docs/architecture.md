@@ -30,8 +30,15 @@ Browser ──POST {key, project}──> verify-access-key (Supabase Edge Functi
 ```
 
 This is the **one browser-side request to a third-party origin** in the app. It carries no
-`Authorization` header and no secrets: the key is the visitor's own, and the project UUID is a
-public identifier that is inert without one.
+`Authorization` and no `apikey` header and no secrets: the key is the visitor's own, and the project
+UUID is a public identifier that is inert without one. It must be a plain `fetch` — a Supabase
+client helper would attach `apikey` and the function's preflight rejects any header other than
+`content-type`.
+
+Both the endpoint and the project UUID come from `NEXT_PUBLIC_*` variables, and the endpoint has no
+compiled-in fallback: if either is missing the site locks rather than guessing. Keys are
+format-checked in `verifyAccessKey` before any request goes out, because the endpoint allows only
+10 requests per 60 seconds and a typo must not spend one.
 
 Verification runs on **every page load**, never on a cached answer, because a key can be revoked
 between visits. Client-side route changes read the in-memory outcome; reloading re-verifies. The
