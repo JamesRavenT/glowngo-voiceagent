@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseAccessProjectId } from "@/lib/access-gate/env";
+import { parseAccessProjectId, parseAccessVerifyUrl } from "@/lib/access-gate/env";
 
 describe("parseAccessProjectId", () => {
   it.each([
@@ -20,5 +20,24 @@ describe("parseAccessProjectId", () => {
     "123e4567-e89b-12d3-a456-42661417400z",
   ])("rejects %s with an actionable message", (raw) => {
     expect(() => parseAccessProjectId(raw)).toThrowError(/NEXT_PUBLIC_ACCESS_PROJECT_ID/);
+  });
+});
+
+describe("parseAccessVerifyUrl", () => {
+  it.each([
+    undefined,
+    "",
+    "   ",
+    "/verify-access-key",
+    "http://example.com/verify-access-key",
+    "not a URL",
+  ])("rejects %s with an actionable message", (raw) => {
+    expect(() => parseAccessVerifyUrl(raw)).toThrowError(/NEXT_PUBLIC_ACCESS_VERIFY_URL/);
+  });
+
+  it("trims and normalises an absolute HTTPS URL", () => {
+    expect(parseAccessVerifyUrl("  https://example.com/verify-access-key  ")).toBe(
+      "https://example.com/verify-access-key",
+    );
   });
 });

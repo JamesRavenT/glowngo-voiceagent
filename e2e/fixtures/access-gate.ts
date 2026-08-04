@@ -2,20 +2,18 @@ import type { Page, Request } from "@playwright/test";
 import { test as base } from "playwright-bdd";
 
 import { STORAGE_KEY } from "@/lib/access-gate/storage";
+import { testAccessVerificationEndpoint } from "@/scripts/security-sentinels.mjs";
 
-export const ACCESS_KEY_VERIFICATION_ENDPOINT =
-  "https://bwjxapgpjhlxpkvvysxf.supabase.co/functions/v1/verify-access-key";
-export const E2E_ACCESS_KEY = "GLOW-GO-E2E";
+export const E2E_ACCESS_KEY = "ABCD-EFGH-JKLM-NPQ";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Expose-Headers": "Retry-After",
 };
 
 export type AccessVerificationOutcome =
   | { status: 200; valid: boolean }
   | { status: 503 }
-  | { status: 429; retryAfter: string };
+  | { status: 429 };
 
 type AccessVerificationResolver =
   | AccessVerificationOutcome
@@ -24,7 +22,7 @@ type AccessVerificationResolver =
 export async function routeAccessVerification(page: Page, resolver: AccessVerificationResolver) {
   const postRequests: Request[] = [];
 
-  await page.route(ACCESS_KEY_VERIFICATION_ENDPOINT, async (route) => {
+  await page.route(testAccessVerificationEndpoint, async (route) => {
     const request = route.request();
 
     if (request.method() === "OPTIONS") {
@@ -62,10 +60,7 @@ export async function routeAccessVerification(page: Page, resolver: AccessVerifi
     await route.fulfill({
       status: outcome.status,
       contentType: "application/json",
-      headers: {
-        ...CORS_HEADERS,
-        ...(outcome.status === 429 ? { "Retry-After": outcome.retryAfter } : {}),
-      },
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: outcome.status === 429 ? "rate_limited" : "unavailable" }),
     });
   });
@@ -76,8 +71,8 @@ export async function routeAccessVerification(page: Page, resolver: AccessVerifi
 export const validAccess: AccessVerificationOutcome = { status: 200, valid: true };
 export const invalidAccess: AccessVerificationOutcome = { status: 200, valid: false };
 export const unavailableAccess: AccessVerificationOutcome = { status: 503 };
-export function rateLimitedAccess(retryAfter: string): AccessVerificationOutcome {
-  return { status: 429, retryAfter };
+export function rateLimitedAccess(): AccessVerificationOutcome {
+  return { status: 429 };
 }
 
 export const test = base.extend({

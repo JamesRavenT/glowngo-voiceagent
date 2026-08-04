@@ -7,6 +7,7 @@ import { accessCopy } from "@/content";
 
 const accessMocks = vi.hoisted(() => ({
   parseAccessProjectId: vi.fn(),
+  parseAccessVerifyUrl: vi.fn(),
   readStoredKey: vi.fn(),
   writeStoredKey: vi.fn(),
   clearStoredKey: vi.fn(),
@@ -15,7 +16,9 @@ const accessMocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/access-gate/env", () => ({
   rawAccessProjectId: undefined,
+  rawAccessVerifyUrl: undefined,
   parseAccessProjectId: accessMocks.parseAccessProjectId,
+  parseAccessVerifyUrl: accessMocks.parseAccessVerifyUrl,
 }));
 
 vi.mock("@/lib/access-gate/storage", () => ({
@@ -29,6 +32,7 @@ vi.mock("@/lib/access-gate/verify", () => ({
 }));
 
 const projectId = "12345678-1234-1234-1234-123456789abc";
+const endpoint = "https://example.com/verify-access-key";
 
 function renderGate(node = <p>Private site content</p>) {
   return render(<AccessGate>{node}</AccessGate>);
@@ -37,6 +41,7 @@ function renderGate(node = <p>Private site content</p>) {
 describe("AccessGate", () => {
   beforeEach(() => {
     accessMocks.parseAccessProjectId.mockReset().mockReturnValue(projectId);
+    accessMocks.parseAccessVerifyUrl.mockReset().mockReturnValue(endpoint);
     accessMocks.readStoredKey.mockReset().mockReturnValue(null);
     accessMocks.writeStoredKey.mockReset();
     accessMocks.clearStoredKey.mockReset();
@@ -110,7 +115,7 @@ describe("AccessGate", () => {
 
     expect(await screen.findByText("Private site content")).toBeInTheDocument();
     expect(accessMocks.verifyAccessKey).toHaveBeenCalledTimes(2);
-    expect(accessMocks.verifyAccessKey).toHaveBeenNthCalledWith(2, "GG-4821", projectId);
+    expect(accessMocks.verifyAccessKey).toHaveBeenNthCalledWith(2, "GG-4821", projectId, endpoint);
   });
 
   it("normalises and stores a fresh valid key", async () => {
@@ -122,7 +127,7 @@ describe("AccessGate", () => {
     fireEvent.click(screen.getByRole("button", { name: accessCopy.submitButton }));
 
     expect(await screen.findByText("Private site content")).toBeInTheDocument();
-    expect(accessMocks.verifyAccessKey).toHaveBeenCalledWith("GG-4821", projectId);
+    expect(accessMocks.verifyAccessKey).toHaveBeenCalledWith("GG-4821", projectId, endpoint);
     expect(accessMocks.writeStoredKey).toHaveBeenCalledWith("GG-4821");
   });
 
@@ -139,6 +144,31 @@ describe("AccessGate", () => {
     expect(input).toHaveAttribute("aria-invalid", "true");
     expect(input).toHaveFocus();
     expect(screen.getByRole("button", { name: accessCopy.submitButton })).toBeEnabled();
+  });
+
+  it("keeps storage and the form usable after a fresh malformed key", async () => {
+    accessMocks.verifyAccessKey.mockResolvedValue({ status: "malformed" });
+    renderGate();
+    const input = await screen.findByLabelText(accessCopy.inputLabel);
+
+    fireEvent.change(input, { target: { value: "wrong-shape" } });
+    fireEvent.click(screen.getByRole("button", { name: accessCopy.submitButton }));
+
+    expect(await screen.findByText(accessCopy.malformed)).toBeInTheDocument();
+    expect(accessMocks.clearStoredKey).not.toHaveBeenCalled();
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input).toHaveFocus();
+    expect(screen.getByRole("button", { name: accessCopy.submitButton })).toBeEnabled();
+  });
+
+  it("clears a malformed stored key and shows the format guidance", async () => {
+    accessMocks.readStoredKey.mockReturnValue("hand-edited-key");
+    accessMocks.verifyAccessKey.mockResolvedValue({ status: "malformed" });
+
+    renderGate();
+
+    expect(await screen.findByText(accessCopy.malformed)).toBeInTheDocument();
+    expect(accessMocks.clearStoredKey).toHaveBeenCalledOnce();
   });
 
   it("disables attempts while rate limited and announces the countdown outside the alert", async () => {
@@ -174,6 +204,26 @@ describe("AccessGate", () => {
     expect(screen.getByLabelText(accessCopy.inputLabel)).toBeDisabled();
     expect(screen.getByRole("button", { name: accessCopy.submitButton })).toBeDisabled();
   });
+
+  it.each(["missing", "invalid"])(
+    "shows a configuration fault without verifying when the verify URL is %s",
+    async (kind) => {
+      const configurationError = new Error(`${kind} verify URL configuration`);
+      accessMocks.parseAccessVerifyUrl.mockImplementation(() => {
+        throw configurationError;
+      });
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+      renderGate();
+
+      expect(await screen.findByText(accessCopy.misconfigured)).toBeInTheDocument();
+      expect(consoleError).toHaveBeenCalledWith(configurationError);
+      expect(accessMocks.verifyAccessKey).not.toHaveBeenCalled();
+      expect(screen.queryByText("Private site content")).not.toBeInTheDocument();
+      expect(screen.getByLabelText(accessCopy.inputLabel)).toBeDisabled();
+      expect(screen.getByRole("button", { name: accessCopy.submitButton })).toBeDisabled();
+    },
+  );
 
   it("checks a stored key exactly once in StrictMode and settles", async () => {
     accessMocks.readStoredKey.mockReturnValue("GG-4821");

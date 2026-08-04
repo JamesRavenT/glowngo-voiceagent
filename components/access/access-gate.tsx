@@ -3,12 +3,17 @@
 import { type FormEvent, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import { accessCopy, salon } from "@/content";
-import { parseAccessProjectId, rawAccessProjectId } from "@/lib/access-gate/env";
+import {
+  parseAccessProjectId,
+  parseAccessVerifyUrl,
+  rawAccessProjectId,
+  rawAccessVerifyUrl,
+} from "@/lib/access-gate/env";
 import { clearStoredKey, readStoredKey, writeStoredKey } from "@/lib/access-gate/storage";
 import { type VerifyOutcome, verifyAccessKey } from "@/lib/access-gate/verify";
 
 type Phase = "checking" | "locked" | "unlocked";
-type LockReason = "expired" | "invalid" | "unavailable" | "rate-limited" | "client-error" | "misconfigured";
+type LockReason = "expired" | "invalid" | "malformed" | "unavailable" | "rate-limited" | "client-error" | "misconfigured";
 type Attempt = { source: "stored" | "fresh"; key: string };
 
 export function AccessGate({ children }: { children: ReactNode }) {
@@ -21,6 +26,7 @@ export function AccessGate({ children }: { children: ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const mountCheckRef = useRef<Promise<void> | null>(null);
   const projectIdRef = useRef<string | null>(null);
+  const endpointRef = useRef<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const remainingSeconds = retryAt === null ? 0 : Math.max(0, Math.ceil((retryAt - now) / 1_000));
@@ -47,6 +53,14 @@ export function AccessGate({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (outcome.status === "malformed") {
+      if (currentAttempt.source === "stored") clearStoredKey();
+      setRetryAt(null);
+      setReason("malformed");
+      setPhase("locked");
+      return;
+    }
+
     if (outcome.status === "rate-limited") {
       const deadline = Date.now() + outcome.retryAfterSeconds * 1_000;
       setNow(Date.now());
@@ -63,14 +77,15 @@ export function AccessGate({ children }: { children: ReactNode }) {
 
   const verifyAttempt = useCallback(async (currentAttempt: Attempt) => {
     const projectId = projectIdRef.current;
-    if (projectId === null) {
+    const endpoint = endpointRef.current;
+    if (projectId === null || endpoint === null) {
       setReason("misconfigured");
       setPhase("locked");
       return;
     }
 
     setAttempt(currentAttempt);
-    const outcome = await verifyAccessKey(currentAttempt.key, projectId);
+    const outcome = await verifyAccessKey(currentAttempt.key, projectId, endpoint);
     applyOutcome(outcome, currentAttempt);
   }, [applyOutcome]);
 
@@ -79,8 +94,10 @@ export function AccessGate({ children }: { children: ReactNode }) {
 
     const checkStoredAccess = async () => {
       let projectId: string;
+      let endpoint: string;
       try {
         projectId = parseAccessProjectId(rawAccessProjectId);
+        endpoint = parseAccessVerifyUrl(rawAccessVerifyUrl);
       } catch (error) {
         console.error(error);
         setReason("misconfigured");
@@ -89,6 +106,7 @@ export function AccessGate({ children }: { children: ReactNode }) {
       }
 
       projectIdRef.current = projectId;
+      endpointRef.current = endpoint;
       const storedKey = readStoredKey();
       if (storedKey === null) {
         setReason(null);
@@ -165,11 +183,13 @@ export function AccessGate({ children }: { children: ReactNode }) {
     ? accessCopy.expired
     : reason === "invalid"
       ? accessCopy.invalid
-      : reason === "unavailable"
-        ? accessCopy.unavailable
-        : reason === "client-error" || reason === "misconfigured"
-          ? accessCopy.misconfigured
-          : null;
+      : reason === "malformed"
+        ? accessCopy.malformed
+        : reason === "unavailable"
+          ? accessCopy.unavailable
+          : reason === "client-error" || reason === "misconfigured"
+            ? accessCopy.misconfigured
+            : null;
   const showRetry = reason === "unavailable" || reason === "rate-limited";
 
   return (
@@ -196,7 +216,7 @@ export function AccessGate({ children }: { children: ReactNode }) {
             autoCapitalize="characters"
             disabled={reason === "misconfigured"}
             aria-describedby="access-gate-message"
-            aria-invalid={reason === "invalid"}
+            aria-invalid={reason === "invalid" || reason === "malformed"}
             className="mt-3 w-full border border-copper bg-ink px-4 py-3 font-utility text-sm uppercase tracking-[0.08em] text-cream outline-none focus:border-gold-hi"
           />
           <button

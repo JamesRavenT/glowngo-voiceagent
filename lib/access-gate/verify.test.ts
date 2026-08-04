@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { parseRetryAfterSeconds, verifyAccessKey } from "@/lib/access-gate/verify";
 
+const validKey = "ABCD-EFGH-JKLM-NPQ";
+const endpoint = "https://verifier.example.com/functions/v1/verify-access-key";
+
 function response(
   body: unknown,
   status = 200,
@@ -20,15 +23,46 @@ describe("verifyAccessKey", () => {
     const fetchMock = vi.fn().mockResolvedValue(response({ valid: true }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(verifyAccessKey("  gg-4821  ", "project-id")).resolves.toEqual({ status: "valid" });
+    await expect(verifyAccessKey("  abcd-efgh-jklm-npq  ", "project-id", endpoint)).resolves.toEqual({ status: "valid" });
 
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://bwjxapgpjhlxpkvvysxf.supabase.co/functions/v1/verify-access-key");
-    expect(url).not.toContain("GG-4821");
+    expect(url).toBe(endpoint);
+    expect(url).not.toContain(validKey);
     expect(options.method).toBe("POST");
     expect(options.headers).toEqual({ "Content-Type": "application/json" });
     expect(options.headers).not.toHaveProperty("Authorization");
-    expect(JSON.parse(options.body as string)).toEqual({ key: "GG-4821", project: "project-id" });
+    expect(options.headers).not.toHaveProperty("apikey");
+    const requestBody = JSON.parse(options.body as string) as Record<string, unknown>;
+    expect(requestBody).toEqual({ key: validKey, project: "project-id" });
+    expect(Object.keys(requestBody)).toHaveLength(2);
+  });
+
+  it.each([
+    "ABC-EFGH-JKLM-NPQ",
+    "ABCDE-EFGH-JKLM-NPQ",
+    "ABCD-EFG-JKLM-NPQ",
+    "ABCD-EFGH-JKLM-NP",
+    "AICD-EFGH-JKLM-NPQ",
+    "AOCD-EFGH-JKLM-NPQ",
+    "A0CD-EFGH-JKLM-NPQ",
+    "A1CD-EFGH-JKLM-NPQ",
+    "",
+  ])("rejects malformed key %j without fetching", async (key) => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(verifyAccessKey(key, "project", endpoint)).resolves.toEqual({ status: "malformed" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("normalises a conforming lowercase key before validating and sending", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(response({ valid: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(verifyAccessKey("abcd-efgh-jklm-npq", "project", endpoint)).resolves.toEqual({ status: "valid" });
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(options.body as string)).toEqual({ key: validKey, project: "project" });
   });
 
   it.each([
@@ -40,7 +74,7 @@ describe("verifyAccessKey", () => {
     [{ valid: "true" }, { status: "unavailable" }],
   ])("classifies a successful response with body %j", async (body, expected) => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response(body)));
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual(expected);
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual(expected);
   });
 
   it("fails closed for a malformed JSON body", async () => {
@@ -50,7 +84,7 @@ describe("verifyAccessKey", () => {
         new Response("not json", { status: 200, headers: { "Content-Type": "application/json" } }),
       ),
     );
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual({ status: "unavailable" });
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual({ status: "unavailable" });
   });
 
   it("accepts a valid JSON body with a text/plain Content-Type", async () => {
@@ -58,7 +92,7 @@ describe("verifyAccessKey", () => {
       headers: { "Content-Type": "text/plain" },
     });
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(fetchResponse));
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual({ status: "valid" });
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual({ status: "valid" });
   });
 
   it("accepts a valid JSON body without a Content-Type header", async () => {
@@ -66,7 +100,7 @@ describe("verifyAccessKey", () => {
     fetchResponse.headers.delete("Content-Type");
     expect(fetchResponse.headers.has("Content-Type")).toBe(false);
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(fetchResponse));
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual({ status: "valid" });
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual({ status: "valid" });
   });
 
   it.each([
@@ -78,7 +112,7 @@ describe("verifyAccessKey", () => {
     [302, { status: "unavailable" }],
   ])("classifies status %i", async (status, expected) => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response(undefined, status)));
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual(expected);
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual(expected);
   });
 
   it("classifies rate limiting with its retry delay", async () => {
@@ -86,7 +120,7 @@ describe("verifyAccessKey", () => {
       "fetch",
       vi.fn().mockResolvedValue(response(undefined, 429, { "Content-Type": "application/json", "Retry-After": "17" })),
     );
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual({
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual({
       status: "rate-limited",
       retryAfterSeconds: 17,
     });
@@ -94,16 +128,16 @@ describe("verifyAccessKey", () => {
 
   it("classifies network failures as unavailable", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("network failure")));
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual({ status: "unavailable" });
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual({ status: "unavailable" });
   });
 
-  it("uses a ten-second timeout and classifies an abort as unavailable", async () => {
+  it("uses an eight-second timeout and classifies an abort as unavailable", async () => {
     const abortedSignal = AbortSignal.abort();
     const timeoutMock = vi.spyOn(AbortSignal, "timeout").mockReturnValue(abortedSignal);
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new DOMException("aborted", "AbortError")));
 
-    await expect(verifyAccessKey("key", "project")).resolves.toEqual({ status: "unavailable" });
-    expect(timeoutMock).toHaveBeenCalledWith(10_000);
+    await expect(verifyAccessKey(validKey, "project", endpoint)).resolves.toEqual({ status: "unavailable" });
+    expect(timeoutMock).toHaveBeenCalledWith(8_000);
   });
 });
 

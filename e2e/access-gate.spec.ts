@@ -49,7 +49,7 @@ test("an invalid fresh key keeps the gate open and permits a corrected retry", a
 
   const input = page.getByLabel(accessCopy.inputLabel);
   const submit = page.getByRole("button", { name: accessCopy.submitButton, exact: true });
-  await input.fill("TYPO-KEY");
+  await input.fill("ZZZZ-ZZZZ-ZZZZ-ZZZ");
   await submit.click();
   await expect(page.locator("#access-gate-message")).toHaveText(accessCopy.invalid);
   await expect(submit).toBeEnabled();
@@ -57,6 +57,17 @@ test("an invalid fresh key keeps the gate open and permits a corrected retry", a
   await input.fill(E2E_ACCESS_KEY);
   await submit.click();
   await expect(page.locator("#hero")).toBeVisible();
+});
+
+test("a malformed key is rejected locally without spending a verification request", async ({ page }) => {
+  const requests = await routeAccessVerification(page, validAccess);
+  await page.goto("/");
+
+  await page.getByLabel(accessCopy.inputLabel).fill("TYPO");
+  await page.getByRole("button", { name: accessCopy.submitButton, exact: true }).click();
+
+  await expect(page.locator("#access-gate-message")).toHaveText(accessCopy.malformed);
+  expect(requests, "Malformed keys must not issue a POST to the verification endpoint").toHaveLength(0);
 });
 
 test("a rejected stored key shows expiry wording and clears storage", async ({ page }) => {
@@ -83,15 +94,15 @@ test("a 503 preserves a stored key and offers a retry", async ({ page }) => {
     .toBe(E2E_ACCESS_KEY);
 });
 
-test("a 429 honors Retry-After and disables submission during the wait", async ({ page }) => {
-  await routeAccessVerification(page, rateLimitedAccess("30"));
+test("a 429 uses the 60-second fallback and disables submission during the wait", async ({ page }) => {
+  await routeAccessVerification(page, rateLimitedAccess());
   await page.goto("/");
 
   const submit = page.getByRole("button", { name: accessCopy.submitButton, exact: true });
   await page.getByLabel(accessCopy.inputLabel).fill(E2E_ACCESS_KEY);
   await submit.click();
 
-  await expect(page.getByRole("status")).toContainText("Too many attempts. Try again in");
+  await expect(page.getByRole("status")).toHaveText(accessCopy.rateLimited(60));
   await expect(submit).toBeDisabled();
   await expect(page.getByRole("button", { name: accessCopy.retryButton })).toBeDisabled();
 });
